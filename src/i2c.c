@@ -177,8 +177,10 @@ void I2C1_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned shor
     while (!(I2C1->SR1 & I2C_SR1_SB));
 
     I2C1->SR1 &= ~I2C_SR1_AF;    // reset NACK
-    // send slave addr is right aligned
-    I2C1->DR = (addr << 1) & 0xFE;
+
+    // send slave addr is right aligned, addr as we get
+    I2C1->DR = addr;
+    // I2C1->DR = (addr << 1) & 0xFE;
 
     // wait for slave addr be sent
     unsigned short dummy = 0;

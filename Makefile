@@ -72,19 +72,16 @@ SRC += ./src/tim.c
 SRC += ./src/hard.c
 SRC += ./src/i2c.c
 # SRC += ./src/dac.c
+# SRC += ./src/flash_program.c
 
 # SRC += ./src/dsp.c
 # SRC += ./src/comms.c
 # SRC += ./src/utils.c
 SRC += ./src/test_functions.c
+SRC += ./src/is31_handler.c
+SRC += ./src/is31fl3733.c
 
-# SRC += ./src/comms_channels.c
-# SRC += ./src/antennas.c
-# SRC += ./src/signals.c
-# SRC += ./src/errors.c
 
-# SRC += ./src/tamper_funcs.c
-# SRC += ./src/flash_program.c
 
 
 ## Core Support

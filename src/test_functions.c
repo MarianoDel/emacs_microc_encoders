@@ -21,6 +21,9 @@
 // #include "dma.h"
 #include "tim.h"
 
+#include "is31_handler.h"
+#include "is31fl3733.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -52,6 +55,9 @@ void TF_I2C_Test_Gpio (void);
 // void TF_Oled_Screen (void);
 // void TF_Oled_Screen_Int (void);
 
+void TF_I2C_IS31_Low_Level (void);
+void TF_I2C_IS31 (void);
+
 
 // Module Functions ------------------------------------------------------------
 void TF_Hardware_Tests (void)
@@ -70,8 +76,11 @@ void TF_Hardware_Tests (void)
 
     // TF_I2C_Send_Data ();
     // TF_I2C_Check_Address ();
-    TF_I2C_Check_Specific_Address ();
+    // TF_I2C_Check_Specific_Address ();
     // TF_I2C_Test_Gpio ();
+
+    TF_I2C_IS31_Low_Level ();
+    // TF_I2C_IS31 ();
     
 }
 
@@ -300,6 +309,127 @@ void TF_I2C_Check_Specific_Address (void)
 }
 
 
+void TF_I2C_IS31_Low_Level (void)
+{
+    // dont use ints
+    Led_Off();
+    
+    I2C1_Init();
+    SDB_CH1_OFF;
+    Wait_ms(100);
+
+    unsigned char cmdbuf [194] = { 0 };
+
+    //
+    // leave from shutdown
+    // unlock cmd reg
+    cmdbuf[0] = 0xFE;    // register write lock
+    cmdbuf[1] = 0xC5;    // write enable once
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+
+    // set conf cmd reg to page 3
+    cmdbuf[0] = 0xFD;    // conf cmd reg
+    cmdbuf[1] = 0x03;    // point to page 3
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+
+    // set conf reg to normal
+    cmdbuf[0] = 0x00;    // conf reg
+    cmdbuf[1] = 0x01;    // shutdown to normal
+    Led_On();
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);    
+
+    // 
+    // set 50% pwm
+    // unlock cmd reg
+    cmdbuf[0] = 0xFE;    // register write lock
+    cmdbuf[1] = 0xC5;    // write enable once
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+
+    // set conf cmd reg to page 1
+    cmdbuf[0] = 0xFD;    // conf cmd reg
+    cmdbuf[1] = 0x01;    // point to page 1
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+
+    // set each pwm reg to 50%
+    cmdbuf[0] = 0x00;    // conf reg
+    for (int i = 0; i < 192; i++)
+        cmdbuf[i+1] = 127;    // pwm value
+    
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 193);
+
+    // 
+    // set all leds on
+    // unlock cmd reg
+    cmdbuf[0] = 0xFE;    // register write lock
+    cmdbuf[1] = 0xC5;    // write enable once
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+
+    // set conf cmd reg to page 0
+    cmdbuf[0] = 0xFD;    // conf cmd reg
+    cmdbuf[1] = 0x00;    // point to page 0
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+
+    // set each led to on
+    cmdbuf[0] = 0x00;    // conf reg
+    // for (int i = 0; i < 24; i++)
+    //     cmdbuf[i+1] = 0xff;    // all ones
+
+    // for (int i = 0; i < 2; i++)    //sw1
+    //     cmdbuf[i+1] = 0xff;    // all ones
+    
+    // for (int i = 2; i < 6; i++)   //sw2 sw3 
+    //     cmdbuf[i+1] = 0x00;    // all zeros
+    
+    // for (int i = 6; i < 8; i++)    //sw4
+    //     cmdbuf[i+1] = 0xff;    // all ones
+
+    // for (int i = 8; i < 12; i++)    //sw5 sw6
+    //     cmdbuf[i+1] = 0x00;    // all zeros
+
+    // for (int i = 12; i < 14; i++)    //sw7
+    //     cmdbuf[i+1] = 0xff;    // all ones
+
+    // for (int i = 14; i < 18; i++)    //sw8 sw9
+    //     cmdbuf[i+1] = 0x00;    // all zeros
+
+    // for (int i = 18; i < 20; i++)    //sw10
+    //     cmdbuf[i+1] = 0xff;    // all ones
+
+    // for (int i = 20; i < 24; i++)    //sw11 sw12
+    //     cmdbuf[i+1] = 0x00;    // all zeros
+
+    cmdbuf[1] = 0x00;    // sw1 low
+    cmdbuf[2] = 0x00;    // sw1 high
+    cmdbuf[3] = 0x00;    // sw2 low
+    cmdbuf[4] = 0x00;    // sw2 high
+    cmdbuf[5] = 0xff;    // sw3 low
+    cmdbuf[6] = 0xff;    // sw3 high
+    cmdbuf[7] = 0x00;    // sw4 low
+    cmdbuf[8] = 0x00;    // sw4 high
+    cmdbuf[9] = 0x00;    // sw5 low
+    cmdbuf[10] = 0x00;    // sw5 high
+    cmdbuf[11] = 0xff;    // sw6 low
+    cmdbuf[12] = 0xff;    // sw6 high
+    cmdbuf[13] = 0x00;    // sw7 low
+    cmdbuf[14] = 0x00;    // sw7 high
+    cmdbuf[15] = 0x00;    // sw8 low
+    cmdbuf[16] = 0x00;    // sw8 high
+    cmdbuf[17] = 0xff;    // sw9 low
+    cmdbuf[18] = 0xff;    // sw9 high
+    cmdbuf[19] = 0x00;    // sw10 low
+    cmdbuf[20] = 0x00;    // sw10 high
+    cmdbuf[21] = 0x00;    // sw11 low
+    cmdbuf[22] = 0x00;    // sw11 high
+    cmdbuf[23] = 0xff;    // sw12 low
+    cmdbuf[24] = 0xff;    // sw12 high
+    
+    I2C1_SendMultiByte (cmdbuf, 0xA0, 25);
+    
+    
+    while (1);
+}
+
+
 void TF_I2C_IS31 (void)
 {
     // dont use ints
@@ -311,19 +441,29 @@ void TF_I2C_IS31 (void)
 
     // use IS31 lib
     IS31FL3733 is31_ch1;
+
+    is31_ch1.address = IS31FL3733_I2C_ADDR(ADDR_GND, ADDR_GND);
+    is31_ch1.i2c_write_reg = &i2c_write_reg;
+    is31_ch1.i2c_read_reg = &i2c_read_reg;
+
+    // Initialize device.
+    IS31FL3733_Init (&is31_ch1);
     
-    while (1)
-    {
-        // addr is right aligned
-        // b0 = 0 for write b0 = 1 for read
-        unsigned char addr = 0xA0;
-        if (I2C1_SendAddr(addr) == 1)
-        {
-            Led_On();
-        }
-        Wait_ms(500);
-        Led_Off();
-    }
+    // Set Global Current Control.
+    IS31FL3733_SetGCC (&is31_ch1, 127);
+
+    // ## PWM mode ## 
+    // Draw something in PWM mode, e.g. set LED brightness at position {1;2} to maximum level:
+    // Set PWM value for LED at {1;2}.
+    // IS31FL3733_SetLEDPWM (&is31_ch1, 1, 2, 255);
+    IS31FL3733_SetLEDPWM (&is31_ch1, IS31FL3733_SW, IS31FL3733_CS, 255);    
+    // Turn on LED at position {1;2}.
+    // IS31FL3733_SetLEDState (&is31_ch1, 1, 2, IS31FL3733_LED_STATE_ON);
+    IS31FL3733_SetLEDState (&is31_ch1, IS31FL3733_SW, IS31FL3733_CS, IS31FL3733_LED_STATE_ON);    
+    
+
+    
+    while (1);
 }
 
 
