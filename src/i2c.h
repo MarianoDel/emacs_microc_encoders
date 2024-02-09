@@ -31,9 +31,10 @@
 
 // Module Exported Functions ---------------------------------------------------
 void I2C1_Init (void);
+void I2C1_Reset (void);
 void I2C1_SendByte (unsigned char addr, unsigned char data);
 unsigned char I2C1_SendAddr (unsigned char addr);
-void I2C1_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size);
+unsigned char I2C1_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size);
 void I2C1_SendMultiByte_Int (unsigned char addr, unsigned char *pdata, unsigned short size);
 unsigned char I2C1_CheckEnded_Int (void);
 

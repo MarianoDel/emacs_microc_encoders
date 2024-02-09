@@ -59,11 +59,20 @@ void I2C1_Init (void)
         RCC_I2C1_CLKEN;
 
     // Speed and Port options
-    // APB freq = 32MHz peripheral clk = 10MHz
-    I2C1->CR2 = 10;
-    // I2C1->CR2 = 2;    
-    I2C1->CCR |= I2C_CCR_FS | I2C_CCR_DUTY | 0x0004;    //100KHz
-    // I2C1->CCR |= I2C_CCR_FS | I2C_CCR_DUTY | 0x0006;    //100KHz    
+    // APB freq = PCKL1 freq = 32MHz
+    I2C1->CR2 = 32;
+    // I2C1->CR2 = 20;    
+
+    // I2C1->CCR = I2C_CCR_FS | I2C_CCR_DUTY | 0x0008;    //160KHz duty 16/9
+    // I2C1->CCR = I2C_CCR_FS | 0x0008;    //160KHz duty 2 (no funciona)
+    // I2C1->CCR = I2C_CCR_FS | I2C_CCR_DUTY | 0x0004;    //320KHz
+    // I2C1->CCR = I2C_CCR_FS | 0x0004;    //320KHz
+    // I2C1->CCR = I2C_CCR_FS | 40;    //270KHz duty 2
+    I2C1->CCR = I2C_CCR_FS | 27;    //270KHz duty 2
+
+    // I2C1->TRISE = 33;    // 450ns
+    // I2C1->TRISE = 66;    // 600ns
+    I2C1->TRISE = 16;    // 500ns
 
     // I2C1 remap to PB8 PB9 SCL SDA
     // unsigned int temp = 0;
@@ -82,6 +91,19 @@ void I2C1_Init (void)
 #endif
 }
 
+
+void I2C1_Reset (void)
+{
+    if (I2C1->SR2 & I2C_SR2_BUSY)
+    {
+        unsigned short dummy = 0;
+        
+        I2C1->CR1 |= I2C_CR1_SWRST;
+        dummy = I2C1->SR2;
+        dummy &= I2C_SR2_BUSY;
+        I2C1->CR1 &= ~(I2C_CR1_SWRST);
+    }
+}
 
 void I2C1_SendByte (unsigned char addr, unsigned char data)
 {
@@ -166,10 +188,20 @@ unsigned char I2C1_SendAddr (unsigned char addr)
 
 
 // no ints
-void I2C1_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size)
+unsigned char I2C1_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size)
 {
-    // wait no busy line
-    while (I2C1->SR2 & I2C_SR2_BUSY);
+    // check no master
+    // while (I2C1->SR2 & I2C_SR2_MSL);
+
+    // // wait no busy line
+    // while (I2C1->SR2 & I2C_SR2_BUSY);
+    while (I2C1->SR2 & I2C_SR2_BUSY)        
+    {
+        LED_ON;
+        Wait_ms(1);
+        LED_OFF;
+        Wait_ms(9);        
+    }
     
     // send START
     I2C1->CR1 |= I2C_CR1_START;
@@ -198,7 +230,7 @@ void I2C1_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned shor
         {
             error = 0;
             I2C1->CR1 |= I2C_CR1_STOP;
-            return;
+            return 1;
         }
             
     } while (error);
@@ -214,6 +246,8 @@ void I2C1_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned shor
     while (!(I2C1->SR1 & I2C_SR1_TXE));
     I2C1->CR1 |= I2C_CR1_STOP;
     
+    // while (I2C1->SR2 & I2C_SR2_MSL);
+    return 0;
 }
 
 

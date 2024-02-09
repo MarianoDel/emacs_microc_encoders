@@ -55,7 +55,9 @@ void TF_I2C_Test_Gpio (void);
 // void TF_Oled_Screen (void);
 // void TF_Oled_Screen_Int (void);
 
-void TF_I2C_IS31_Low_Level (void);
+void TF_I2C_IS31_P1_Low_Level (void);
+void TF_I2C_IS31_P2_Low_Level (void);
+void TF_I2C_IS31_Low_Level_Int (void);
 void TF_I2C_IS31 (void);
 
 
@@ -79,8 +81,11 @@ void TF_Hardware_Tests (void)
     // TF_I2C_Check_Specific_Address ();
     // TF_I2C_Test_Gpio ();
 
-    TF_I2C_IS31_Low_Level ();
+    TF_I2C_IS31_P1_Low_Level ();
+    // TF_I2C_IS31_Low_Level_Int ();
     // TF_I2C_IS31 ();
+
+    // TF_I2C_IS31_P2_Low_Level ();    
     
 }
 
@@ -309,124 +314,513 @@ void TF_I2C_Check_Specific_Address (void)
 }
 
 
-void TF_I2C_IS31_Low_Level (void)
+void TF_I2C_IS31_P1_Low_Level (void)
 {
     // dont use ints
     Led_Off();
-    
-    I2C1_Init();
+
     SDB_CH1_OFF;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_ON;
+    I2C1_Init();
+    Wait_ms(100);
+
+    unsigned char cmdbuf [194] = { 0 };
+    int error = 0;
+    unsigned char addr = 0xA0;
+
+    I2C1_Reset ();
+
+
+    while (1)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Led_On();
+            Wait_ms(250);
+            Led_Off();
+            Wait_ms(250);
+        }
+
+        error = 0;
+
+        //
+        // leave from shutdown
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf reg to normal
+            cmdbuf[0] = 0x00;    // conf reg
+            cmdbuf[1] = 0x01;    // shutdown to normal
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        //
+        // set global current reg
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set gcc reg to 127
+            cmdbuf[0] = 0x01;    // gcc reg
+            cmdbuf[1] = 127;    // 127
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+        
+        // 
+        // set 50% pwm
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 1
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x01;    // point to page 1
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each pwm reg to 50%
+            cmdbuf[0] = 0x00;    // conf reg
+            for (int i = 0; i < 192; i++)
+                cmdbuf[i+1] = 127;    // pwm value
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 193);
+        }
+
+        // 
+        // set all leds on
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {        
+            // set conf cmd reg to page 0
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x00;    // point to page 0
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each led to on
+            cmdbuf[0] = 0x00;    // conf reg
+            // for (int i = 0; i < 24; i++)
+            //     cmdbuf[i+1] = 0xff;    // all ones
+
+            // all blue
+            cmdbuf[1] = 0x00;    // sw1 low
+            cmdbuf[2] = 0x00;    // sw1 high
+            cmdbuf[3] = 0x00;    // sw2 low
+            cmdbuf[4] = 0x00;    // sw2 high
+            cmdbuf[5] = 0xff;    // sw3 low
+            cmdbuf[6] = 0xff;    // sw3 high
+            cmdbuf[7] = 0x00;    // sw4 low
+            cmdbuf[8] = 0x00;    // sw4 high
+            cmdbuf[9] = 0x00;    // sw5 low
+            cmdbuf[10] = 0x00;    // sw5 high
+            cmdbuf[11] = 0xff;    // sw6 low
+            cmdbuf[12] = 0xff;    // sw6 high
+            cmdbuf[13] = 0x00;    // sw7 low
+            cmdbuf[14] = 0x00;    // sw7 high
+            cmdbuf[15] = 0x00;    // sw8 low
+            cmdbuf[16] = 0x00;    // sw8 high
+            cmdbuf[17] = 0xff;    // sw9 low
+            cmdbuf[18] = 0xff;    // sw9 high
+            cmdbuf[19] = 0x00;    // sw10 low
+            cmdbuf[20] = 0x00;    // sw10 high
+            cmdbuf[21] = 0x00;    // sw11 low
+            cmdbuf[22] = 0x00;    // sw11 high
+            cmdbuf[23] = 0xff;    // sw12 low
+            cmdbuf[24] = 0xff;    // sw12 high
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 25);
+        }
+
+        if (error)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                Led_On();
+                Wait_ms(125);
+                Led_Off();
+                Wait_ms(125);
+            }
+            I2C1_Reset ();            
+        }
+        else
+            Led_On();
+    
+        Wait_ms(20000);
+    }
+}
+
+
+void TF_I2C_IS31_P2_Low_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_ON;
+    SDB_CH2_OFF;
+    SDB_CH3_ON;
+    SDB_CH4_ON;
+    I2C1_Init();
+    Wait_ms(100);
+
+    unsigned char cmdbuf [194] = { 0 };
+    int error = 0;
+    unsigned char addr = 0xA6;
+
+    I2C1_Reset ();
+
+    while (1)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Led_On();
+            Wait_ms(250);
+            Led_Off();
+            Wait_ms(250);
+        }
+
+        error = 0;
+
+        //
+        // leave from shutdown
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf reg to normal
+            cmdbuf[0] = 0x00;    // conf reg
+            cmdbuf[1] = 0x01;    // shutdown to normal
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        //
+        // set global current reg
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set gcc reg to 127
+            cmdbuf[0] = 0x01;    // gcc reg
+            cmdbuf[1] = 127;    // 127
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        // 
+        // set 50% pwm
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 1
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x01;    // point to page 1
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each pwm reg to 50%
+            cmdbuf[0] = 0x00;    // conf reg
+            for (int i = 0; i < 192; i++)
+                cmdbuf[i+1] = 127;    // pwm value
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 193);
+        }
+
+        // 
+        // set all leds on
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {        
+            // set conf cmd reg to page 0
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x00;    // point to page 0
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each led to on
+            cmdbuf[0] = 0x00;    // conf reg
+            for (int i = 0; i < 24; i++)
+                cmdbuf[i+1] = 0xff;    // all ones
+
+            // cmdbuf[1] = 0x00;    // sw1 low
+            // cmdbuf[2] = 0x00;    // sw1 high
+            // cmdbuf[3] = 0x00;    // sw2 low
+            // cmdbuf[4] = 0x00;    // sw2 high
+            // cmdbuf[5] = 0xff;    // sw3 low
+            // cmdbuf[6] = 0xff;    // sw3 high
+            // cmdbuf[7] = 0x00;    // sw4 low
+            // cmdbuf[8] = 0x00;    // sw4 high
+            // cmdbuf[9] = 0x00;    // sw5 low
+            // cmdbuf[10] = 0x00;    // sw5 high
+            // cmdbuf[11] = 0xff;    // sw6 low
+            // cmdbuf[12] = 0xff;    // sw6 high
+            // cmdbuf[13] = 0x00;    // sw7 low
+            // cmdbuf[14] = 0x00;    // sw7 high
+            // cmdbuf[15] = 0x00;    // sw8 low
+            // cmdbuf[16] = 0x00;    // sw8 high
+            // cmdbuf[17] = 0xff;    // sw9 low
+            // cmdbuf[18] = 0xff;    // sw9 high
+            // cmdbuf[19] = 0x00;    // sw10 low
+            // cmdbuf[20] = 0x00;    // sw10 high
+            // cmdbuf[21] = 0x00;    // sw11 low
+            // cmdbuf[22] = 0x00;    // sw11 high
+            // cmdbuf[23] = 0xff;    // sw12 low
+            // cmdbuf[24] = 0xff;    // sw12 high
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 25);
+        }
+
+        if (error)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                Led_On();
+                Wait_ms(125);
+                Led_Off();
+                Wait_ms(125);
+            }
+            I2C1_Reset ();
+        }
+        else
+            Led_On();
+    
+        Wait_ms(20000);
+    }
+}
+
+
+void TF_I2C_IS31_Low_Level_Int (void)
+{
+    // use with ints
+    Led_Off();
+
+    SDB_CH1_OFF;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_ON;
+    I2C1_Init();
     Wait_ms(100);
 
     unsigned char cmdbuf [194] = { 0 };
 
-    //
-    // leave from shutdown
-    // unlock cmd reg
-    cmdbuf[0] = 0xFE;    // register write lock
-    cmdbuf[1] = 0xC5;    // write enable once
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+    I2C1_Reset ();
 
-    // set conf cmd reg to page 3
-    cmdbuf[0] = 0xFD;    // conf cmd reg
-    cmdbuf[1] = 0x03;    // point to page 3
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
 
-    // set conf reg to normal
-    cmdbuf[0] = 0x00;    // conf reg
-    cmdbuf[1] = 0x01;    // shutdown to normal
-    Led_On();
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);    
+    while (1)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Led_On();
+            Wait_ms(250);
+            Led_Off();
+            Wait_ms(250);
+        }
 
-    // 
-    // set 50% pwm
-    // unlock cmd reg
-    cmdbuf[0] = 0xFE;    // register write lock
-    cmdbuf[1] = 0xC5;    // write enable once
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
 
-    // set conf cmd reg to page 1
-    cmdbuf[0] = 0xFD;    // conf cmd reg
-    cmdbuf[1] = 0x01;    // point to page 1
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+        //
+        // leave from shutdown
+        //
+        // unlock cmd reg
+        cmdbuf[0] = 0xFE;    // register write lock
+        cmdbuf[1] = 0xC5;    // write enable once
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
 
-    // set each pwm reg to 50%
-    cmdbuf[0] = 0x00;    // conf reg
-    for (int i = 0; i < 192; i++)
-        cmdbuf[i+1] = 127;    // pwm value
+        // set conf cmd reg to page 3
+        cmdbuf[0] = 0xFD;    // conf cmd reg
+        cmdbuf[1] = 0x03;    // point to page 3
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
+
+        // set conf reg to normal
+        cmdbuf[0] = 0x00;    // conf reg
+        cmdbuf[1] = 0x01;    // shutdown to normal
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
+
+        //
+        // set global current reg
+        //
+        // unlock cmd reg
+        cmdbuf[0] = 0xFE;    // register write lock
+        cmdbuf[1] = 0xC5;    // write enable once
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
+
+        // set conf cmd reg to page 3
+        cmdbuf[0] = 0xFD;    // conf cmd reg
+        cmdbuf[1] = 0x03;    // point to page 3
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
+
+        // set gcc reg to 127
+        cmdbuf[0] = 0x01;    // gcc reg
+        cmdbuf[1] = 127;    // 127
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
+
+        // 
+        // set 50% pwm
+        //
+        // unlock cmd reg
+        cmdbuf[0] = 0xFE;    // register write lock
+        cmdbuf[1] = 0xC5;    // write enable once
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);        
+
+        // set conf cmd reg to page 1
+        cmdbuf[0] = 0xFD;    // conf cmd reg
+        cmdbuf[1] = 0x01;    // point to page 1
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
+
+        // set each pwm reg to 50%
+        cmdbuf[0] = 0x00;    // conf reg
+        for (int i = 0; i < 192; i++)
+            cmdbuf[i+1] = 127;    // pwm value
     
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 193);
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 193);
 
-    // 
-    // set all leds on
-    // unlock cmd reg
-    cmdbuf[0] = 0xFE;    // register write lock
-    cmdbuf[1] = 0xC5;    // write enable once
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+        // 
+        // set all leds on
+        //
+        // unlock cmd reg
+        cmdbuf[0] = 0xFE;    // register write lock
+        cmdbuf[1] = 0xC5;    // write enable once
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
 
-    // set conf cmd reg to page 0
-    cmdbuf[0] = 0xFD;    // conf cmd reg
-    cmdbuf[1] = 0x00;    // point to page 0
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 2);
+        // set conf cmd reg to page 0
+        cmdbuf[0] = 0xFD;    // conf cmd reg
+        cmdbuf[1] = 0x00;    // point to page 0
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 2);
 
-    // set each led to on
-    cmdbuf[0] = 0x00;    // conf reg
-    // for (int i = 0; i < 24; i++)
-    //     cmdbuf[i+1] = 0xff;    // all ones
+        // set each led to on
+        cmdbuf[0] = 0x00;    // conf reg
+        for (int i = 0; i < 24; i++)
+            cmdbuf[i+1] = 0xff;    // all ones
 
-    // for (int i = 0; i < 2; i++)    //sw1
-    //     cmdbuf[i+1] = 0xff;    // all ones
+        // cmdbuf[1] = 0x00;    // sw1 low
+        // cmdbuf[2] = 0x00;    // sw1 high
+        // cmdbuf[3] = 0x00;    // sw2 low
+        // cmdbuf[4] = 0x00;    // sw2 high
+        // cmdbuf[5] = 0xff;    // sw3 low
+        // cmdbuf[6] = 0xff;    // sw3 high
+        // cmdbuf[7] = 0x00;    // sw4 low
+        // cmdbuf[8] = 0x00;    // sw4 high
+        // cmdbuf[9] = 0x00;    // sw5 low
+        // cmdbuf[10] = 0x00;    // sw5 high
+        // cmdbuf[11] = 0xff;    // sw6 low
+        // cmdbuf[12] = 0xff;    // sw6 high
+        // cmdbuf[13] = 0x00;    // sw7 low
+        // cmdbuf[14] = 0x00;    // sw7 high
+        // cmdbuf[15] = 0x00;    // sw8 low
+        // cmdbuf[16] = 0x00;    // sw8 high
+        // cmdbuf[17] = 0xff;    // sw9 low
+        // cmdbuf[18] = 0xff;    // sw9 high
+        // cmdbuf[19] = 0x00;    // sw10 low
+        // cmdbuf[20] = 0x00;    // sw10 high
+        // cmdbuf[21] = 0x00;    // sw11 low
+        // cmdbuf[22] = 0x00;    // sw11 high
+        // cmdbuf[23] = 0xff;    // sw12 low
+        // cmdbuf[24] = 0xff;    // sw12 high
     
-    // for (int i = 2; i < 6; i++)   //sw2 sw3 
-    //     cmdbuf[i+1] = 0x00;    // all zeros
+        I2C1_SendMultiByte_Int (0xA0, cmdbuf, 25);
+
+        Led_On();
     
-    // for (int i = 6; i < 8; i++)    //sw4
-    //     cmdbuf[i+1] = 0xff;    // all ones
-
-    // for (int i = 8; i < 12; i++)    //sw5 sw6
-    //     cmdbuf[i+1] = 0x00;    // all zeros
-
-    // for (int i = 12; i < 14; i++)    //sw7
-    //     cmdbuf[i+1] = 0xff;    // all ones
-
-    // for (int i = 14; i < 18; i++)    //sw8 sw9
-    //     cmdbuf[i+1] = 0x00;    // all zeros
-
-    // for (int i = 18; i < 20; i++)    //sw10
-    //     cmdbuf[i+1] = 0xff;    // all ones
-
-    // for (int i = 20; i < 24; i++)    //sw11 sw12
-    //     cmdbuf[i+1] = 0x00;    // all zeros
-
-    cmdbuf[1] = 0x00;    // sw1 low
-    cmdbuf[2] = 0x00;    // sw1 high
-    cmdbuf[3] = 0x00;    // sw2 low
-    cmdbuf[4] = 0x00;    // sw2 high
-    cmdbuf[5] = 0xff;    // sw3 low
-    cmdbuf[6] = 0xff;    // sw3 high
-    cmdbuf[7] = 0x00;    // sw4 low
-    cmdbuf[8] = 0x00;    // sw4 high
-    cmdbuf[9] = 0x00;    // sw5 low
-    cmdbuf[10] = 0x00;    // sw5 high
-    cmdbuf[11] = 0xff;    // sw6 low
-    cmdbuf[12] = 0xff;    // sw6 high
-    cmdbuf[13] = 0x00;    // sw7 low
-    cmdbuf[14] = 0x00;    // sw7 high
-    cmdbuf[15] = 0x00;    // sw8 low
-    cmdbuf[16] = 0x00;    // sw8 high
-    cmdbuf[17] = 0xff;    // sw9 low
-    cmdbuf[18] = 0xff;    // sw9 high
-    cmdbuf[19] = 0x00;    // sw10 low
-    cmdbuf[20] = 0x00;    // sw10 high
-    cmdbuf[21] = 0x00;    // sw11 low
-    cmdbuf[22] = 0x00;    // sw11 high
-    cmdbuf[23] = 0xff;    // sw12 low
-    cmdbuf[24] = 0xff;    // sw12 high
-    
-    I2C1_SendMultiByte (cmdbuf, 0xA0, 25);
-    
-    
-    while (1);
+        Wait_ms(20000);
+    }
 }
 
 
