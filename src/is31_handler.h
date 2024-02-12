@@ -17,16 +17,12 @@
 
 
 // Module Exported Functions ---------------------------------------------------
-unsigned char i2c_write_reg (unsigned char i2c_addr,
-                             unsigned char reg_addr,
-                             unsigned char *buffer,
-                             unsigned char count);
+void IS31_Init (void);
+void IS31_SetLed_AllOn (void);
+void IS31_SetLed_AllOff (void);
+void IS31_SetLedRGB (unsigned char led, unsigned char r, unsigned char g, unsigned char b);
 
 
-unsigned char i2c_read_reg (unsigned char i2c_addr,
-                             unsigned char reg_addr,
-                             unsigned char *buffer,
-                             unsigned char count);
 
 #endif    /* _IS31_HANDLER_H_ */
 

@@ -56,6 +56,7 @@ void TF_I2C_Test_Gpio (void);
 // void TF_Oled_Screen_Int (void);
 
 void TF_I2C_IS31_P1_Low_Level (void);
+void TF_I2C_IS31_P1_High_Level (void);
 void TF_I2C_IS31_P2_Low_Level (void);
 void TF_I2C_IS31_Low_Level_Int (void);
 void TF_I2C_IS31 (void);
@@ -81,7 +82,8 @@ void TF_Hardware_Tests (void)
     // TF_I2C_Check_Specific_Address ();
     // TF_I2C_Test_Gpio ();
 
-    TF_I2C_IS31_P1_Low_Level ();
+    // TF_I2C_IS31_P1_Low_Level ();
+    TF_I2C_IS31_P1_High_Level ();
     // TF_I2C_IS31_Low_Level_Int ();
     // TF_I2C_IS31 ();
 
@@ -502,6 +504,55 @@ void TF_I2C_IS31_P1_Low_Level (void)
 }
 
 
+void TF_I2C_IS31_P1_High_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_OFF;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_ON;
+    I2C1_Init();
+    Wait_ms(100);
+
+    I2C1_Reset ();
+
+
+    for (int i = 0; i < 3; i++)
+    {
+        Led_On();
+        Wait_ms(250);
+        Led_Off();
+        Wait_ms(250);
+    }
+
+    IS31_Init();
+    
+    while (1)
+    {
+
+        // set all red
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 255, 0, 0);
+    
+        Wait_ms(10000);
+
+        // set all green
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 255, 0);
+    
+        Wait_ms(10000);
+        
+        // set all blue
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 0, 255);
+    
+        Wait_ms(10000);
+    }
+}
+
+
 void TF_I2C_IS31_P2_Low_Level (void)
 {
     // dont use ints
@@ -824,41 +875,41 @@ void TF_I2C_IS31_Low_Level_Int (void)
 }
 
 
-void TF_I2C_IS31 (void)
-{
-    // dont use ints
-    Led_Off();
+// void TF_I2C_IS31 (void)
+// {
+//     // dont use ints
+//     Led_Off();
     
-    I2C1_Init();
-    SDB_CH1_OFF;
-    Wait_ms(100);
+//     I2C1_Init();
+//     SDB_CH1_OFF;
+//     Wait_ms(100);
 
-    // use IS31 lib
-    IS31FL3733 is31_ch1;
+//     // use IS31 lib
+//     IS31FL3733 is31_ch1;
 
-    is31_ch1.address = IS31FL3733_I2C_ADDR(ADDR_GND, ADDR_GND);
-    is31_ch1.i2c_write_reg = &i2c_write_reg;
-    is31_ch1.i2c_read_reg = &i2c_read_reg;
+//     is31_ch1.address = IS31FL3733_I2C_ADDR(ADDR_GND, ADDR_GND);
+//     is31_ch1.i2c_write_reg = &i2c_write_reg;
+//     is31_ch1.i2c_read_reg = &i2c_read_reg;
 
-    // Initialize device.
-    IS31FL3733_Init (&is31_ch1);
+//     // Initialize device.
+//     IS31FL3733_Init (&is31_ch1);
     
-    // Set Global Current Control.
-    IS31FL3733_SetGCC (&is31_ch1, 127);
+//     // Set Global Current Control.
+//     IS31FL3733_SetGCC (&is31_ch1, 127);
 
-    // ## PWM mode ## 
-    // Draw something in PWM mode, e.g. set LED brightness at position {1;2} to maximum level:
-    // Set PWM value for LED at {1;2}.
-    // IS31FL3733_SetLEDPWM (&is31_ch1, 1, 2, 255);
-    IS31FL3733_SetLEDPWM (&is31_ch1, IS31FL3733_SW, IS31FL3733_CS, 255);    
-    // Turn on LED at position {1;2}.
-    // IS31FL3733_SetLEDState (&is31_ch1, 1, 2, IS31FL3733_LED_STATE_ON);
-    IS31FL3733_SetLEDState (&is31_ch1, IS31FL3733_SW, IS31FL3733_CS, IS31FL3733_LED_STATE_ON);    
+//     // ## PWM mode ## 
+//     // Draw something in PWM mode, e.g. set LED brightness at position {1;2} to maximum level:
+//     // Set PWM value for LED at {1;2}.
+//     // IS31FL3733_SetLEDPWM (&is31_ch1, 1, 2, 255);
+//     IS31FL3733_SetLEDPWM (&is31_ch1, IS31FL3733_SW, IS31FL3733_CS, 255);    
+//     // Turn on LED at position {1;2}.
+//     // IS31FL3733_SetLEDState (&is31_ch1, 1, 2, IS31FL3733_LED_STATE_ON);
+//     IS31FL3733_SetLEDState (&is31_ch1, IS31FL3733_SW, IS31FL3733_CS, IS31FL3733_LED_STATE_ON);    
     
 
     
-    while (1);
-}
+//     while (1);
+// }
 
 
 //--- end of file ---//

@@ -89,18 +89,18 @@
 #define LED10_CS_SW    (CS10 | SWR01 | SWG02 | SWB03)
 #define LED11_CS_SW    (CS11 | SWR01 | SWG02 | SWB03)
 #define LED12_CS_SW    (CS12 | SWR01 | SWG02 | SWB03)
-#define LED13_CS_SW    (CS01 | SWR04 | SWG05 | SWB06)
-#define LED14_CS_SW    (CS02 | SWR04 | SWG05 | SWB06)
-#define LED15_CS_SW    (CS03 | SWR04 | SWG05 | SWB06)
-#define LED16_CS_SW    (CS04 | SWR04 | SWG05 | SWB06)
-#define LED17_CS_SW    (CS05 | SWR04 | SWG05 | SWB06)
-#define LED18_CS_SW    (CS06 | SWR04 | SWG05 | SWB06)
-#define LED19_CS_SW    (CS07 | SWR04 | SWG05 | SWB06)
-#define LED20_CS_SW    (CS08 | SWR04 | SWG05 | SWB06)
-#define LED21_CS_SW    (CS09 | SWR04 | SWG05 | SWB06)
-#define LED22_CS_SW    (CS10 | SWR04 | SWG05 | SWB06)
-#define LED23_CS_SW    (CS11 | SWR04 | SWG05 | SWB06)
-#define LED24_CS_SW    (CS12 | SWR04 | SWG05 | SWB06)
+#define LED13_CS_SW    (CS12 | SWR04 | SWG05 | SWB06)
+#define LED14_CS_SW    (CS11 | SWR04 | SWG05 | SWB06)
+#define LED15_CS_SW    (CS10 | SWR04 | SWG05 | SWB06)
+#define LED16_CS_SW    (CS09 | SWR04 | SWG05 | SWB06)
+#define LED17_CS_SW    (CS08 | SWR04 | SWG05 | SWB06)
+#define LED18_CS_SW    (CS07 | SWR04 | SWG05 | SWB06)
+#define LED19_CS_SW    (CS06 | SWR04 | SWG05 | SWB06)
+#define LED20_CS_SW    (CS05 | SWR04 | SWG05 | SWB06)
+#define LED21_CS_SW    (CS04 | SWR04 | SWG05 | SWB06)
+#define LED22_CS_SW    (CS03 | SWR04 | SWG05 | SWB06) 
+#define LED23_CS_SW    (CS02 | SWR04 | SWG05 | SWB06)
+#define LED24_CS_SW    (CS01 | SWR04 | SWG05 | SWB06)
 
 #define LED25_CS_SW    (CS01 | SWR07 | SWG08 | SWB09)
 #define LED26_CS_SW    (CS02 | SWR07 | SWG08 | SWB09)
@@ -114,18 +114,18 @@
 #define LED34_CS_SW    (CS10 | SWR07 | SWG08 | SWB09)
 #define LED35_CS_SW    (CS11 | SWR07 | SWG08 | SWB09)
 #define LED36_CS_SW    (CS12 | SWR07 | SWG08 | SWB09)
-#define LED37_CS_SW    (CS01 | SWR10 | SWG11 | SWB12)
-#define LED38_CS_SW    (CS02 | SWR10 | SWG11 | SWB12)
-#define LED39_CS_SW    (CS03 | SWR10 | SWG11 | SWB12)
-#define LED40_CS_SW    (CS04 | SWR10 | SWG11 | SWB12)
-#define LED41_CS_SW    (CS05 | SWR10 | SWG11 | SWB12)
-#define LED42_CS_SW    (CS06 | SWR10 | SWG11 | SWB12)
-#define LED43_CS_SW    (CS07 | SWR10 | SWG11 | SWB12)
-#define LED44_CS_SW    (CS08 | SWR10 | SWG11 | SWB12)
-#define LED45_CS_SW    (CS09 | SWR10 | SWG11 | SWB12)
-#define LED46_CS_SW    (CS10 | SWR10 | SWG11 | SWB12)
-#define LED47_CS_SW    (CS11 | SWR10 | SWG11 | SWB12)
-#define LED48_CS_SW    (CS12 | SWR10 | SWG11 | SWB12)
+#define LED37_CS_SW    (CS12 | SWR10 | SWG11 | SWB12)
+#define LED38_CS_SW    (CS11 | SWR10 | SWG11 | SWB12)
+#define LED39_CS_SW    (CS10 | SWR10 | SWG11 | SWB12)
+#define LED40_CS_SW    (CS09 | SWR10 | SWG11 | SWB12)
+#define LED41_CS_SW    (CS08 | SWR10 | SWG11 | SWB12)
+#define LED42_CS_SW    (CS07 | SWR10 | SWG11 | SWB12)
+#define LED43_CS_SW    (CS06 | SWR10 | SWG11 | SWB12)
+#define LED44_CS_SW    (CS05 | SWR10 | SWG11 | SWB12)
+#define LED45_CS_SW    (CS04 | SWR10 | SWG11 | SWB12)
+#define LED46_CS_SW    (CS03 | SWR10 | SWG11 | SWB12)
+#define LED47_CS_SW    (CS02 | SWR10 | SWG11 | SWB12)
+#define LED48_CS_SW    (CS01 | SWR10 | SWG11 | SWB12)
 
 // Externals -------------------------------------------------------------------
 
@@ -149,9 +149,38 @@ unsigned short led_coordinate [48] = {LED01_CS_SW, LED02_CS_SW, LED03_CS_SW, LED
 
 // Module Private Functions ----------------------------------------------------
 void IS31_SetLed_All (unsigned char on_off);
+unsigned char IS31_Pwm_Coordinate (unsigned char sw, unsigned char cs);
+void IS31_SetPix (unsigned char sw, unsigned char cs, unsigned char pwm);
+void IS31_OnOff_Coordinate (unsigned char sw,
+                            unsigned char cs,
+                            unsigned char * reg_pos,
+                            unsigned char * reg_val);
 
+void IS31_SetOnOff_Register (unsigned char on_off_reg_pos, unsigned char on_off_reg_val);
+void IS31_SetGcc_Register (unsigned char gcc);
+
+void IS31_CmdReg_Unlock (void);
+void IS31_CmdReg_Page (unsigned char page);
+void IS31_SetReg_Value (unsigned char reg, unsigned char value);
+
+unsigned char addr = 0xA0;
 
 // Module Functions ------------------------------------------------------------
+void IS31_Init (void)
+{
+    // leave from shutdown
+    IS31_CmdReg_Unlock ();
+    IS31_CmdReg_Page (3);
+    IS31_SetReg_Value (0, 1);
+
+    // set global current reg    
+    IS31_SetGcc_Register (127);
+
+    // set all leds on
+    IS31_SetLed_AllOff();
+}
+
+
 void IS31_SetLedRGB (unsigned char led, unsigned char r, unsigned char g, unsigned char b)
 {
     // one cs three sw; nibbles -> cs,r_sw,g_sw,b_sw
@@ -186,15 +215,8 @@ void IS31_SetLedRGB (unsigned char led, unsigned char r, unsigned char g, unsign
 
 void IS31_SetLed_All (unsigned char on_off)
 {
-    // unlock cmd reg
-    cmdbuf[0] = 0xFE;    // register write lock
-    cmdbuf[1] = 0xC5;    // write enable once
-    I2C1_SendMultiByte (cmdbuf, addr, 2);
-
-    // set conf cmd reg to page 0
-    cmdbuf[0] = 0xFD;    // conf cmd reg
-    cmdbuf[1] = 0x00;    // point to page 0
-    I2C1_SendMultiByte (cmdbuf, addr, 2);
+    IS31_CmdReg_Unlock ();
+    IS31_CmdReg_Page (0);
     
     // set each led to on
     cmdbuf[0] = 0x00;    // conf reg
@@ -209,7 +231,7 @@ void IS31_SetLed_All (unsigned char on_off)
         on_off_led[i] = all_value;
     }
 
-    error = I2C1_SendMultiByte (cmdbuf, addr, 25);    
+    I2C1_SendMultiByte (cmdbuf, addr, 25);    
 
 }
 
@@ -224,6 +246,57 @@ void IS31_SetLed_AllOff (void)
 {
     IS31_SetLed_All (0);
 }
+
+
+void IS31_SetGcc_Register (unsigned char gcc)
+{
+    IS31_CmdReg_Unlock();
+    IS31_CmdReg_Page(3);
+    IS31_SetReg_Value (1, gcc);    
+}
+
+
+void IS31_SetOnOff_Register (unsigned char on_off_reg_pos, unsigned char on_off_reg_val)
+{
+    IS31_CmdReg_Unlock ();
+    IS31_CmdReg_Page (0);
+    IS31_SetReg_Value (on_off_reg_pos, on_off_reg_val);
+}
+
+
+void IS31_CmdReg_Unlock (void)
+{
+    // unlock cmd reg
+    cmdbuf[0] = 0xFE;    // register write lock
+    cmdbuf[1] = 0xC5;    // write enable once
+    I2C1_SendMultiByte (cmdbuf, addr, 2);    
+}
+
+
+void IS31_CmdReg_Page (unsigned char page)
+{
+    // set conf cmd reg to page 1
+    cmdbuf[0] = 0xFD;    // conf cmd reg
+    cmdbuf[1] = page;    // point to page
+    I2C1_SendMultiByte (cmdbuf, addr, 2);    
+}
+
+
+void IS31_SetReg_Value (unsigned char reg, unsigned char value)
+{
+    cmdbuf[0] = reg;
+    cmdbuf[1] = value;
+    I2C1_SendMultiByte (cmdbuf, addr, 2);    
+}
+
+
+void IS31_SetPwm_Register (unsigned char pwm_pos, unsigned char pwm_value)
+{
+    IS31_CmdReg_Unlock ();
+    IS31_CmdReg_Page (1);
+    IS31_SetReg_Value (pwm_pos, pwm_value);
+}
+
 
 void IS31_SetPix (unsigned char sw, unsigned char cs, unsigned char pwm)
 {
