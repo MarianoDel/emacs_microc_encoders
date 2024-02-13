@@ -16,8 +16,9 @@
 #define I2C_ADDRESS_MSK    0x7F
 
 #define I2C_USE_I2C1
-// #define I2C_USE_I2C2
-// #define I2C_WITH_INTS
+#define I2C_USE_I2C2
+// #define I2C1_WITH_INTS
+// #define I2C2_WITH_INTS
 
 // Common Defines --------------------------------------------------------------
 #define I2C_CR2_NBYTES_Pos           (16U)                                     

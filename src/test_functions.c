@@ -61,6 +61,7 @@ void TF_I2C_IS31_P2_Low_Level (void);
 void TF_I2C_IS31_Low_Level_Int (void);
 void TF_I2C_IS31 (void);
 
+void TF_IS31_Encoder (void);
 
 // Module Functions ------------------------------------------------------------
 void TF_Hardware_Tests (void)
@@ -83,12 +84,13 @@ void TF_Hardware_Tests (void)
     // TF_I2C_Test_Gpio ();
 
     // TF_I2C_IS31_P1_Low_Level ();
-    TF_I2C_IS31_P1_High_Level ();
+    // TF_I2C_IS31_P1_High_Level ();
     // TF_I2C_IS31_Low_Level_Int ();
     // TF_I2C_IS31 ();
 
     // TF_I2C_IS31_P2_Low_Level ();    
-    
+
+    TF_IS31_Encoder ();
 }
 
 
@@ -549,6 +551,164 @@ void TF_I2C_IS31_P1_High_Level (void)
             IS31_SetLedRGB (i, 0, 0, 255);
     
         Wait_ms(10000);
+
+        IS31_SetLed_AllOff();
+        
+        // dimmer red
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 16, 0, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 128, 0, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 255, 0, 0);
+        Wait_ms(1000);
+        
+        IS31_SetLed_AllOff();        
+
+        // dimmer green
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 16, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 128, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 255, 0);
+        Wait_ms(1000);
+        
+        IS31_SetLed_AllOff();        
+
+        // dimmer blue
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 0, 16);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 0, 128);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (i, 0, 0, 255);
+        Wait_ms(1000);        
+
+        IS31_SetLed_AllOff();        
+                
+    }
+}
+
+
+void TF_IS31_Encoder (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_OFF;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_ON;
+    I2C1_Init();
+    Wait_ms(100);
+
+    I2C1_Reset ();
+
+
+    for (int i = 0; i < 3; i++)
+    {
+        Led_On();
+        Wait_ms(250);
+        Led_Off();
+        Wait_ms(250);
+    }
+
+    IS31_Init();
+
+    int encoder1_pos = 0;
+    int encoder2_pos = 0;
+    int center = 0;
+        
+    while (1)
+    {
+        // encoder first position        
+        if (CheckCW (ENCODER_NUM_2))
+        {
+            if (encoder1_pos)    // >0
+                encoder1_pos--;
+
+            IS31_SetLed_AllOff();
+            
+            // encoder center
+            center = (encoder1_pos + 1) * 24;
+            center = center / 10;
+
+            if (center < 2)
+                center = 2;
+            
+            // encoder1_pos -2 & +2            
+            // IS31_SetLedRGB (center - 1, 255, 0, 0);
+            // IS31_SetLedRGB (center - 0, 0, 255, 0);
+            // IS31_SetLedRGB (center + 1, 255, 0, 0);
+
+            IS31_SetLedRGB (center - 2, 0, 0, 255);
+            IS31_SetLedRGB (center - 1, 0, 255, 0);
+            IS31_SetLedRGB (center - 0, 255, 0, 0);
+            IS31_SetLedRGB (center + 1, 0, 255, 0);
+            IS31_SetLedRGB (center + 2, 0, 0, 255);
+
+            // IS31_SetLedRGB (center - 2, 16, 16, 16);
+            // IS31_SetLedRGB (center - 1, 128, 128, 128);
+            // IS31_SetLedRGB (center - 0, 255, 0, 0);
+            // IS31_SetLedRGB (center + 1, 128, 128, 128);
+            // IS31_SetLedRGB (center + 2, 16, 16, 16);
+            // for (int i = 0; i < 48; i++)
+            //     IS31_SetLedRGB (i, 255, 0, 0);
+
+            
+        }
+
+        if (CheckCCW (ENCODER_NUM_2))
+        {
+            if (encoder1_pos < 9)
+                encoder1_pos++;
+
+            IS31_SetLed_AllOff();
+            
+            // encoder center
+            center = (encoder1_pos + 1) * 24;
+            center = center / 10;
+
+            if (center > 21)
+                center = 21;
+            
+            // encoder1_pos -2 & +2
+            // IS31_SetLedRGB (center - 1, 255, 0, 0);
+            // IS31_SetLedRGB (center - 0, 0, 255, 0);
+            // IS31_SetLedRGB (center + 1, 255, 0, 0);
+
+            IS31_SetLedRGB (center - 2, 0, 0, 255);
+            IS31_SetLedRGB (center - 1, 0, 255, 0);
+            IS31_SetLedRGB (center - 0, 255, 0, 0);
+            IS31_SetLedRGB (center + 1, 0, 255, 0);
+            IS31_SetLedRGB (center + 2, 0, 0, 255);
+
+            // IS31_SetLedRGB (center - 2, 16, 16, 16);
+            // IS31_SetLedRGB (center - 1, 128, 128, 128);
+            // IS31_SetLedRGB (center - 0, 255, 0, 0);
+            // IS31_SetLedRGB (center + 1, 128, 128, 128);
+            // IS31_SetLedRGB (center + 2, 16, 16, 16);
+
+            // for (int i = 0; i < 48; i++)
+            //     IS31_SetLedRGB (i, 0, 255, 0);
+            
+        }
+        
+        Hard_Update_Encoders ();
+                
     }
 }
 
