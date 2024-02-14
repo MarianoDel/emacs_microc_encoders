@@ -40,8 +40,9 @@ void I2C1_SendMultiByte_Int (unsigned char addr, unsigned char *pdata, unsigned 
 unsigned char I2C1_CheckEnded_Int (void);
 
 void I2C2_Init (void);
+void I2C2_Reset (void);
 void I2C2_SendByte (unsigned char, unsigned char);
-
+unsigned char I2C2_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size);
 
 #endif    /* _I2C_H_ */
 

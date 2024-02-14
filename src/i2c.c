@@ -393,6 +393,20 @@ void I2C2_Init (void)
 }
 
 
+void I2C2_Reset (void)
+{
+    if (I2C2->SR2 & I2C_SR2_BUSY)
+    {
+        unsigned short dummy = 0;
+        
+        I2C2->CR1 |= I2C_CR1_SWRST;
+        dummy = I2C2->SR2;
+        dummy &= I2C_SR2_BUSY;
+        I2C2->CR1 &= ~(I2C_CR1_SWRST);
+    }
+}
+
+
 void I2C2_SendByte (unsigned char addr, unsigned char data)
 {
     // wait no busy line

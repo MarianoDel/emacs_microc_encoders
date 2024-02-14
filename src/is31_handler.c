@@ -2,7 +2,6 @@
 // ## @Author: Med
 // ## @Editor: Emacs - ggtags
 // ## @TAGS:   Global
-// ## @CPU:    STM32F103
 // ##
 // #### IS31_HANDLER.C ####################################
 //---------------------------------------------------------
@@ -132,6 +131,7 @@
 
 // Globals ---------------------------------------------------------------------
 unsigned char cmdbuf [194];
+// unsigned char on_off_led [24 * 4] = { 0 };
 unsigned char on_off_led [24] = { 0 };
 unsigned short led_coordinate [48] = {LED01_CS_SW, LED02_CS_SW, LED03_CS_SW, LED04_CS_SW,
                                       LED05_CS_SW, LED06_CS_SW, LED07_CS_SW, LED08_CS_SW,
@@ -148,40 +148,41 @@ unsigned short led_coordinate [48] = {LED01_CS_SW, LED02_CS_SW, LED03_CS_SW, LED
 
 
 // Module Private Functions ----------------------------------------------------
-void IS31_SetLed_All (unsigned char on_off);
 unsigned char IS31_Pwm_Coordinate (unsigned char sw, unsigned char cs);
-void IS31_SetPix (unsigned char sw, unsigned char cs, unsigned char pwm);
+void IS31_SetPix (unsigned char addr, unsigned char sw, unsigned char cs, unsigned char pwm);
 void IS31_OnOff_Coordinate (unsigned char sw,
                             unsigned char cs,
                             unsigned char * reg_pos,
                             unsigned char * reg_val);
 
-void IS31_SetOnOff_Register (unsigned char on_off_reg_pos, unsigned char on_off_reg_val);
-void IS31_SetGcc_Register (unsigned char gcc);
+void IS31_SetLed_All (unsigned char addr, unsigned char on_off);
+void IS31_SetOnOff_Register (unsigned char addr, unsigned char on_off_reg_pos, unsigned char on_off_reg_val);
+void IS31_SetGcc_Register (unsigned char adddr, unsigned char gcc);
 
-void IS31_CmdReg_Unlock (void);
-void IS31_CmdReg_Page (unsigned char page);
-void IS31_SetReg_Value (unsigned char reg, unsigned char value);
+void IS31_CmdReg_Unlock (unsigned char addr);
+void IS31_CmdReg_Page (unsigned char addr, unsigned char page);
+void IS31_SetReg_Value (unsigned char addr, unsigned char reg, unsigned char value);
 
-unsigned char addr = 0xA0;
+// unsigned char addr = 0xA0;
 
 // Module Functions ------------------------------------------------------------
-void IS31_Init (void)
+void IS31_Init (unsigned char addr)
 {
     // leave from shutdown
-    IS31_CmdReg_Unlock ();
-    IS31_CmdReg_Page (3);
-    IS31_SetReg_Value (0, 1);
+    IS31_CmdReg_Unlock (addr);
+    IS31_CmdReg_Page (addr, 3);
+    IS31_SetReg_Value (addr, 0, 1);
 
     // set global current reg    
-    IS31_SetGcc_Register (127);
+    IS31_SetGcc_Register (addr, 127);
 
-    // set all leds on
-    IS31_SetLed_AllOff();
+    // set all leds off
+    IS31_SetLed_AllOff(addr);
+
 }
 
 
-void IS31_SetLedRGB (unsigned char led, unsigned char r, unsigned char g, unsigned char b)
+void IS31_SetLedRGB (unsigned char addr, unsigned char led, unsigned char r, unsigned char g, unsigned char b)
 {
     // one cs three sw; nibbles -> cs,r_sw,g_sw,b_sw
     unsigned char cs = 0;
@@ -205,18 +206,29 @@ void IS31_SetLedRGB (unsigned char led, unsigned char r, unsigned char g, unsign
     b_sw = (unsigned char) calc;
 
     // set R pix
-    IS31_SetPix (r_sw, cs, r);
+    IS31_SetPix (addr, r_sw, cs, r);
     // set G pix
-    IS31_SetPix (g_sw, cs, g);
+    IS31_SetPix (addr, g_sw, cs, g);
     // set B pix
-    IS31_SetPix (b_sw, cs, b);
+    IS31_SetPix (addr, b_sw, cs, b);
 }
 
 
-void IS31_SetLed_All (unsigned char on_off)
+void IS31_SetLed_All (unsigned char addr, unsigned char on_off)
 {
-    IS31_CmdReg_Unlock ();
-    IS31_CmdReg_Page (0);
+    // unsigned char on_off_offset = 0;
+    
+    IS31_CmdReg_Unlock (addr);
+    IS31_CmdReg_Page (addr, 0);
+
+    // if (addr == I2C_ADDR_P1)
+    //     on_off_offset = 0;    // OFFSET_P1
+    // else if (addr == I2C_ADDR_P2)
+    //     on_off_offset = 24;    //OFFSET_P2
+    // else if (addr == I2C_ADDR_P3)
+    //     on_off_offset = 48;    //OFFSET_P3
+    // else
+    //     on_off_offset = 72;    //OFFSET_P4
     
     // set each led to on
     cmdbuf[0] = 0x00;    // conf reg
@@ -228,7 +240,8 @@ void IS31_SetLed_All (unsigned char on_off)
     for (int i = 0; i < 24; i++)
     {
         cmdbuf[i+1] = all_value;
-        on_off_led[i] = all_value;
+        // on_off_led[i+on_off_offset] = all_value;
+        on_off_led[i] = all_value;        
     }
 
     I2C1_SendMultiByte (cmdbuf, addr, 25);    
@@ -236,35 +249,101 @@ void IS31_SetLed_All (unsigned char on_off)
 }
 
 
-void IS31_SetLed_AllOn (void)
+void IS31_SetLed_LowHalfOff (unsigned char addr)
 {
-    IS31_SetLed_All (1);
+    // unsigned char on_off_offset = 0;
+    
+    IS31_CmdReg_Unlock (addr);
+    IS31_CmdReg_Page (addr, 0);
+    
+    // if (addr == I2C_ADDR_P1)
+    //     on_off_offset = 0;    // OFFSET_P1
+    // else if (addr == I2C_ADDR_P2)
+    //     on_off_offset = 24;    //OFFSET_P2
+    // else if (addr == I2C_ADDR_P3)
+    //     on_off_offset = 48;    //OFFSET_P3
+    // else
+    //     on_off_offset = 72;    //OFFSET_P4
+
+    // set each led to on
+    cmdbuf[0] = 0x00;    // conf reg
+    
+    for (int i = 0; i < 12; i++)
+    {
+        cmdbuf[i+1] = 0;
+        // on_off_led[i+on_off_offset] = 0;
+        on_off_led[i] = 0;        
+    }
+
+    I2C1_SendMultiByte (cmdbuf, addr, 13);
+
 }
 
 
-void IS31_SetLed_AllOff (void)
+void IS31_SetLed_HighHalfOff (unsigned char addr)
 {
-    IS31_SetLed_All (0);
+    // unsigned char on_off_offset = 0;
+    
+    IS31_CmdReg_Unlock (addr);
+    IS31_CmdReg_Page (addr, 0);
+    
+    // if (addr == I2C_ADDR_P1)
+    //     on_off_offset = 0;    // OFFSET_P1
+    // else if (addr == I2C_ADDR_P2)
+    //     on_off_offset = 24;    //OFFSET_P2
+    // else if (addr == I2C_ADDR_P3)
+    //     on_off_offset = 48;    //OFFSET_P3
+    // else
+    //     on_off_offset = 72;    //OFFSET_P4
+
+    // set each led to on
+    cmdbuf[0] = 0x00;    // conf reg
+    
+    for (int i = 0; i < 12; i++)
+        // cmdbuf[i+1] = on_off_led[i+on_off_offset];
+        cmdbuf[i+1] = on_off_led[i];
+
+    for (int i = 12; i < 24; i++)
+    {
+        cmdbuf[i+1] = 0;
+        // on_off_led[i+on_off_offset] = 0;
+        on_off_led[i] = 0;        
+    }
+
+    I2C1_SendMultiByte (cmdbuf, addr, 25);
+
 }
 
 
-void IS31_SetGcc_Register (unsigned char gcc)
+void IS31_SetLed_AllOn (unsigned char addr)
 {
-    IS31_CmdReg_Unlock();
-    IS31_CmdReg_Page(3);
-    IS31_SetReg_Value (1, gcc);    
+    IS31_SetLed_All (addr, 1);
 }
 
 
-void IS31_SetOnOff_Register (unsigned char on_off_reg_pos, unsigned char on_off_reg_val)
+void IS31_SetLed_AllOff (unsigned char addr)
 {
-    IS31_CmdReg_Unlock ();
-    IS31_CmdReg_Page (0);
-    IS31_SetReg_Value (on_off_reg_pos, on_off_reg_val);
+    IS31_SetLed_All (addr, 0);
 }
 
 
-void IS31_CmdReg_Unlock (void)
+void IS31_SetGcc_Register (unsigned char addr, unsigned char gcc)
+{
+    IS31_CmdReg_Unlock(addr);
+    IS31_CmdReg_Page(addr, 3);
+    IS31_SetReg_Value (addr, 1, gcc);    
+}
+
+
+void IS31_SetOnOff_Register (unsigned char addr, unsigned char on_off_reg_pos, unsigned char on_off_reg_val)
+{
+    IS31_CmdReg_Unlock (addr);
+    IS31_CmdReg_Page (addr, 0);
+    IS31_SetReg_Value (addr, on_off_reg_pos, on_off_reg_val);
+}
+
+
+void IS31_CmdReg_Unlock (unsigned char addr)
 {
     // unlock cmd reg
     cmdbuf[0] = 0xFE;    // register write lock
@@ -273,7 +352,7 @@ void IS31_CmdReg_Unlock (void)
 }
 
 
-void IS31_CmdReg_Page (unsigned char page)
+void IS31_CmdReg_Page (unsigned char addr, unsigned char page)
 {
     // set conf cmd reg to page 1
     cmdbuf[0] = 0xFD;    // conf cmd reg
@@ -282,7 +361,7 @@ void IS31_CmdReg_Page (unsigned char page)
 }
 
 
-void IS31_SetReg_Value (unsigned char reg, unsigned char value)
+void IS31_SetReg_Value (unsigned char addr, unsigned char reg, unsigned char value)
 {
     cmdbuf[0] = reg;
     cmdbuf[1] = value;
@@ -290,41 +369,55 @@ void IS31_SetReg_Value (unsigned char reg, unsigned char value)
 }
 
 
-void IS31_SetPwm_Register (unsigned char pwm_pos, unsigned char pwm_value)
+void IS31_SetPwm_Register (unsigned char addr, unsigned char pwm_pos, unsigned char pwm_value)
 {
-    IS31_CmdReg_Unlock ();
-    IS31_CmdReg_Page (1);
-    IS31_SetReg_Value (pwm_pos, pwm_value);
+    IS31_CmdReg_Unlock (addr);
+    IS31_CmdReg_Page (addr, 1);
+    IS31_SetReg_Value (addr, pwm_pos, pwm_value);
 }
 
 
-void IS31_SetPix (unsigned char sw, unsigned char cs, unsigned char pwm)
+void IS31_SetPix (unsigned char addr, unsigned char sw, unsigned char cs, unsigned char pwm)
 {
+    // unsigned char on_off_offset = 0;
     unsigned char on_off_reg_pos = 0;
     unsigned char on_off_reg_val = 0;    
     unsigned char coor_pwm = 0;
 
+    // if (addr == I2C_ADDR_P1)
+    //     on_off_offset = 0;    // OFFSET_P1
+    // else if (addr == I2C_ADDR_P2)
+    //     on_off_offset = 24;    //OFFSET_P2
+    // else if (addr == I2C_ADDR_P3)
+    //     on_off_offset = 48;    //OFFSET_P3
+    // else
+    //     on_off_offset = 72;    //OFFSET_P4
+    
     IS31_OnOff_Coordinate (sw, cs, &on_off_reg_pos, &on_off_reg_val);
     coor_pwm = IS31_Pwm_Coordinate (sw, cs);
     
     if (!pwm)
     {
         // set the pix off
-        on_off_led[on_off_reg_pos] &= (unsigned char) (~on_off_reg_val);
-        on_off_reg_val = on_off_led[on_off_reg_pos];
+        // on_off_led[on_off_reg_pos + on_off_offset] &= (unsigned char) (~on_off_reg_val);
+        // on_off_reg_val = on_off_led[on_off_reg_pos + on_off_offset];
+        on_off_led[on_off_reg_pos] &= (unsigned char) (~on_off_reg_val);        
+        on_off_reg_val = on_off_led[on_off_reg_pos];        
 
-        IS31_SetOnOff_Register (on_off_reg_pos, on_off_reg_val);
+        IS31_SetOnOff_Register (addr, on_off_reg_pos, on_off_reg_val);
         return;
     }
 
     // set pix pwm
-    IS31_SetPwm_Register (coor_pwm, pwm);
+    IS31_SetPwm_Register (addr, coor_pwm, pwm);
 
     // set pix to on
+    // on_off_led[on_off_reg_pos + on_off_offset] |= on_off_reg_val;
+    // on_off_reg_val = on_off_led[on_off_reg_pos + on_off_offset];        
     on_off_led[on_off_reg_pos] |= on_off_reg_val;
     on_off_reg_val = on_off_led[on_off_reg_pos];
 
-    IS31_SetOnOff_Register (on_off_reg_pos, on_off_reg_val);    
+    IS31_SetOnOff_Register (addr, on_off_reg_pos, on_off_reg_val);    
 }
 
 

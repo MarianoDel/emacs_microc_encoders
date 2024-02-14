@@ -27,5 +27,6 @@ void Comms_Timeouts (void);
 void Comms_Update (void);
 // static void Comms_Messages (char * msg_str);
 unsigned char Comms_Rpi_Answering (void);
+void Comms_Send_Encoder_Data (unsigned char encoder_number, unsigned char position);
 
 #endif    /* _COMMS_H_ */

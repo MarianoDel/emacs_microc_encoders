@@ -75,11 +75,12 @@ SRC += ./src/i2c.c
 # SRC += ./src/flash_program.c
 
 # SRC += ./src/dsp.c
-# SRC += ./src/comms.c
+SRC += ./src/comms.c
 # SRC += ./src/utils.c
 SRC += ./src/test_functions.c
 SRC += ./src/is31_handler.c
-SRC += ./src/is31fl3733.c
+SRC += ./src/display.c
+# SRC += ./src/is31fl3733.c
 
 
 

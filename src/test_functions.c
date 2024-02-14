@@ -56,8 +56,12 @@ void TF_I2C_Test_Gpio (void);
 // void TF_Oled_Screen_Int (void);
 
 void TF_I2C_IS31_P1_Low_Level (void);
-void TF_I2C_IS31_P1_High_Level (void);
 void TF_I2C_IS31_P2_Low_Level (void);
+void TF_I2C_IS31_P3_Low_Level (void);
+void TF_I2C_IS31_P4_Low_Level (void);
+
+void TF_I2C_IS31_P1_High_Level (void);
+void TF_I2C_IS31_One_by_One_High_Level (void);
 void TF_I2C_IS31_Low_Level_Int (void);
 void TF_I2C_IS31 (void);
 
@@ -84,13 +88,18 @@ void TF_Hardware_Tests (void)
     // TF_I2C_Test_Gpio ();
 
     // TF_I2C_IS31_P1_Low_Level ();
-    // TF_I2C_IS31_P1_High_Level ();
+    // TF_I2C_IS31_P2_Low_Level ();
+    // TF_I2C_IS31_P3_Low_Level ();
+    // TF_I2C_IS31_P4_Low_Level ();
+    
+    TF_I2C_IS31_P1_High_Level ();
+    // TF_I2C_IS31_One_by_One_High_Level ();
     // TF_I2C_IS31_Low_Level_Int ();
     // TF_I2C_IS31 ();
 
-    // TF_I2C_IS31_P2_Low_Level ();    
+    
 
-    TF_IS31_Encoder ();
+    // TF_IS31_Encoder ();
 }
 
 
@@ -529,76 +538,256 @@ void TF_I2C_IS31_P1_High_Level (void)
         Wait_ms(250);
     }
 
-    IS31_Init();
+    unsigned char cmdbuf [194] = { 0 };
+    unsigned char addr = 0xA0;
+    
+    IS31_Init(I2C_ADDR_P1);
+
+    // for (int i = 0; i < 192; i++)
+    //     IS31_SetPwm_Register (addr, i, 127);
+    
+    // // set all red sw1 & cs1 - cs12
+    // for (int i = 0; i < 12; i++)
+    //     IS31_SetPix (addr, 0, i, 127);
+
+    // set all red sw4 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (addr, 3, i, 127);
+
+    // // set all red sw7 & cs1 - cs12    
+    // for (int i = 0; i < 12; i++)
+    //     IS31_SetPix (addr, 6, i, 127);
+    
+    // // set all red sw10 & cs1 - cs12    
+    // for (int i = 0; i < 12; i++)
+    //     IS31_SetPix (addr, 9, i, 127);
+    
+    while (1);
+
+    
+    // 
+    // set all leds on
+    //
+    // unlock cmd reg
+    cmdbuf[0] = 0xFE;    // register write lock
+    cmdbuf[1] = 0xC5;    // write enable once
+    I2C1_SendMultiByte (cmdbuf, addr, 2);
+
+    // set conf cmd reg to page 0
+    cmdbuf[0] = 0xFD;    // conf cmd reg
+    cmdbuf[1] = 0x00;    // point to page 0
+    I2C1_SendMultiByte (cmdbuf, addr, 2);
+
+    // set each led to on
+    cmdbuf[0] = 0x00;    // conf reg
+
+    // all blue
+    cmdbuf[1] = 0x00;    // sw1 low
+    cmdbuf[2] = 0x00;    // sw1 high
+    cmdbuf[3] = 0x00;    // sw2 low
+    cmdbuf[4] = 0x00;    // sw2 high
+    cmdbuf[5] = 0xff;    // sw3 low
+    cmdbuf[6] = 0xff;    // sw3 high
+    cmdbuf[7] = 0x00;    // sw4 low
+    cmdbuf[8] = 0x00;    // sw4 high
+    cmdbuf[9] = 0x00;    // sw5 low
+    cmdbuf[10] = 0x00;    // sw5 high
+    cmdbuf[11] = 0xff;    // sw6 low
+    cmdbuf[12] = 0xff;    // sw6 high
+    cmdbuf[13] = 0x00;    // sw7 low
+    cmdbuf[14] = 0x00;    // sw7 high
+    cmdbuf[15] = 0x00;    // sw8 low
+    cmdbuf[16] = 0x00;    // sw8 high
+    cmdbuf[17] = 0xff;    // sw9 low
+    cmdbuf[18] = 0xff;    // sw9 high
+    cmdbuf[19] = 0x00;    // sw10 low
+    cmdbuf[20] = 0x00;    // sw10 high
+    cmdbuf[21] = 0x00;    // sw11 low
+    cmdbuf[22] = 0x00;    // sw11 high
+    cmdbuf[23] = 0xff;    // sw12 low
+    cmdbuf[24] = 0xff;    // sw12 high
+    
+    I2C1_SendMultiByte (cmdbuf, addr, 25);
+
+    while (1);
+    
+    // while (1)
+    // {
+
+    //     // set all red
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 255, 0, 0);
+    
+    //     Wait_ms(10000);
+
+    //     // set all green
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 255, 0);
+    
+    //     Wait_ms(10000);
+        
+    //     // set all blue
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 255);
+    
+    //     Wait_ms(10000);
+
+    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
+        
+    //     // dimmer red
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 16, 0, 0);
+    //     Wait_ms(1000);
+        
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 128, 0, 0);
+    //     Wait_ms(1000);
+        
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 255, 0, 0);
+    //     Wait_ms(1000);
+        
+    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
+
+    //     // dimmer green
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 16, 0);
+    //     Wait_ms(1000);
+        
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 128, 0);
+    //     Wait_ms(1000);
+        
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 255, 0);
+    //     Wait_ms(1000);
+        
+    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
+
+    //     // dimmer blue
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 16);
+    //     Wait_ms(1000);
+        
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 128);
+    //     Wait_ms(1000);
+        
+    //     for (int i = 0; i < 48; i++)
+    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 255);
+    //     Wait_ms(1000);        
+
+    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
+                
+    // }
+}
+
+
+void TF_I2C_IS31_One_by_One_High_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_OFF;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_ON;
+    I2C1_Init();
+    Wait_ms(100);
+
+    I2C1_Reset ();
+
+
+    for (int i = 0; i < 3; i++)
+    {
+        Led_On();
+        Wait_ms(250);
+        Led_Off();
+        Wait_ms(250);
+    }
+
+    IS31_Init(I2C_ADDR_P1);
     
     while (1)
     {
+        // set all red increasing
+        // for (int i = 0; i < 48; i++)
+        // {
+        //     IS31_SetLedRGB (i, 255, 0, 0);
+        //     Wait_ms(300);
+        // }
+        // IS31_SetLed_AllOff();
+        // Wait_ms(1000);
 
-        // set all red
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 255, 0, 0);
-    
-        Wait_ms(10000);
+        // // set all red one by one        
+        // for (int i = 0; i < 48; i++)
+        // {
+        //     IS31_SetLed_AllOff();            
+        //     IS31_SetLedRGB (i, 255, 0, 0);
+        //     Wait_ms(300);
+        // }        
+        // IS31_SetLed_AllOff();
+        // Wait_ms(1000);
 
-        // set all green
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 255, 0);
-    
-        Wait_ms(10000);
         
-        // set all blue
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 0, 255);
-    
-        Wait_ms(10000);
+        // set all green increasing
+        // for (int i = 0; i < 48; i++)
+        // {
+        //     IS31_SetLedRGB (i, 0, 255, 0);
+        //     Wait_ms(300);
+        // }
+        // IS31_SetLed_AllOff();
+        // Wait_ms(1000);
 
-        IS31_SetLed_AllOff();
-        
-        // dimmer red
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 16, 0, 0);
-        Wait_ms(1000);
-        
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 128, 0, 0);
-        Wait_ms(1000);
-        
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 255, 0, 0);
-        Wait_ms(1000);
-        
-        IS31_SetLed_AllOff();        
+        // // set all green one by one        
+        // for (int i = 0; i < 48; i++)
+        // {
+        //     IS31_SetLed_AllOff();            
+        //     IS31_SetLedRGB (i, 0, 255, 0);
+        //     Wait_ms(300);
+        // }        
+        // IS31_SetLed_AllOff();
+        // Wait_ms(1000);
 
-        // dimmer green
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 16, 0);
-        Wait_ms(1000);
-        
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 128, 0);
-        Wait_ms(1000);
-        
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 255, 0);
-        Wait_ms(1000);
-        
-        IS31_SetLed_AllOff();        
+        // // set all blue increasing
+        // for (int i = 0; i < 48; i++)
+        // {
+        //     IS31_SetLedRGB (i, 0, 0, 255);
+        //     Wait_ms(300);
+        // }
+        // IS31_SetLed_AllOff();
+        // Wait_ms(1000);
 
-        // dimmer blue
+        // // set all blue one by one        
+        // for (int i = 0; i < 48; i++)
+        // {
+        //     IS31_SetLed_AllOff();            
+        //     IS31_SetLedRGB (i, 0, 0, 255);
+        //     Wait_ms(300);
+        // }        
+        // IS31_SetLed_AllOff();
+        // Wait_ms(1000);
+
+        // set all yellow increasing
         for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 0, 16);
-        Wait_ms(1000);
-        
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 0, 128);
-        Wait_ms(1000);
-        
-        for (int i = 0; i < 48; i++)
-            IS31_SetLedRGB (i, 0, 0, 255);
+        {
+            IS31_SetLedRGB (I2C_ADDR_P1, i, 127, 127, 0);
+            // Wait_ms(300);
+        }
         Wait_ms(1000);        
+        IS31_SetLed_AllOff(I2C_ADDR_P1);
+        Wait_ms(1000);
 
-        IS31_SetLed_AllOff();        
-                
+        // // set all yellow one by one        
+        // for (int i = 0; i < 48; i++)
+        // {
+        //     IS31_SetLed_AllOff();            
+        //     IS31_SetLedRGB (i, 127, 127, 0);
+        //     Wait_ms(300);
+        // }        
+        // IS31_SetLed_AllOff();
+        // Wait_ms(1000);
+        
     }
 }
 
@@ -626,7 +815,7 @@ void TF_IS31_Encoder (void)
         Wait_ms(250);
     }
 
-    IS31_Init();
+    IS31_Init(I2C_ADDR_P1);
 
     int encoder1_pos = 0;
     int encoder2_pos = 0;
@@ -640,70 +829,29 @@ void TF_IS31_Encoder (void)
             if (encoder1_pos)    // >0
                 encoder1_pos--;
 
-            IS31_SetLed_AllOff();
-            
             // encoder center
-            center = (encoder1_pos + 1) * 24;
-            center = center / 10;
+            center = encoder1_pos * 4;
 
-            if (center < 2)
-                center = 2;
-            
-            // encoder1_pos -2 & +2            
-            // IS31_SetLedRGB (center - 1, 255, 0, 0);
-            // IS31_SetLedRGB (center - 0, 0, 255, 0);
-            // IS31_SetLedRGB (center + 1, 255, 0, 0);
-
-            IS31_SetLedRGB (center - 2, 0, 0, 255);
-            IS31_SetLedRGB (center - 1, 0, 255, 0);
-            IS31_SetLedRGB (center - 0, 255, 0, 0);
-            IS31_SetLedRGB (center + 1, 0, 255, 0);
-            IS31_SetLedRGB (center + 2, 0, 0, 255);
-
-            // IS31_SetLedRGB (center - 2, 16, 16, 16);
-            // IS31_SetLedRGB (center - 1, 128, 128, 128);
-            // IS31_SetLedRGB (center - 0, 255, 0, 0);
-            // IS31_SetLedRGB (center + 1, 128, 128, 128);
-            // IS31_SetLedRGB (center + 2, 16, 16, 16);
-            // for (int i = 0; i < 48; i++)
-            //     IS31_SetLedRGB (i, 255, 0, 0);
-
+            IS31_SetLed_AllOff(I2C_ADDR_P1);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 0, 127, 0, 127);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 1, 255, 0, 0);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 2, 255, 0, 0);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 3, 127, 0, 127);            
             
         }
 
         if (CheckCCW (ENCODER_NUM_2))
         {
-            if (encoder1_pos < 9)
+            if (encoder1_pos < 5)
                 encoder1_pos++;
 
-            IS31_SetLed_AllOff();
-            
-            // encoder center
-            center = (encoder1_pos + 1) * 24;
-            center = center / 10;
+            center = encoder1_pos * 4;
 
-            if (center > 21)
-                center = 21;
-            
-            // encoder1_pos -2 & +2
-            // IS31_SetLedRGB (center - 1, 255, 0, 0);
-            // IS31_SetLedRGB (center - 0, 0, 255, 0);
-            // IS31_SetLedRGB (center + 1, 255, 0, 0);
-
-            IS31_SetLedRGB (center - 2, 0, 0, 255);
-            IS31_SetLedRGB (center - 1, 0, 255, 0);
-            IS31_SetLedRGB (center - 0, 255, 0, 0);
-            IS31_SetLedRGB (center + 1, 0, 255, 0);
-            IS31_SetLedRGB (center + 2, 0, 0, 255);
-
-            // IS31_SetLedRGB (center - 2, 16, 16, 16);
-            // IS31_SetLedRGB (center - 1, 128, 128, 128);
-            // IS31_SetLedRGB (center - 0, 255, 0, 0);
-            // IS31_SetLedRGB (center + 1, 128, 128, 128);
-            // IS31_SetLedRGB (center + 2, 16, 16, 16);
-
-            // for (int i = 0; i < 48; i++)
-            //     IS31_SetLedRGB (i, 0, 255, 0);
+            IS31_SetLed_AllOff(I2C_ADDR_P1);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 0, 127, 0, 127);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 1, 255, 0, 0);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 2, 255, 0, 0);
+            IS31_SetLedRGB (I2C_ADDR_P1, center + 3, 127, 0, 127);            
             
         }
         
@@ -728,6 +876,378 @@ void TF_I2C_IS31_P2_Low_Level (void)
     unsigned char cmdbuf [194] = { 0 };
     int error = 0;
     unsigned char addr = 0xA6;
+
+    I2C1_Reset ();
+
+    while (1)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Led_On();
+            Wait_ms(250);
+            Led_Off();
+            Wait_ms(250);
+        }
+
+        error = 0;
+
+        //
+        // leave from shutdown
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf reg to normal
+            cmdbuf[0] = 0x00;    // conf reg
+            cmdbuf[1] = 0x01;    // shutdown to normal
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        //
+        // set global current reg
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set gcc reg to 127
+            cmdbuf[0] = 0x01;    // gcc reg
+            cmdbuf[1] = 127;    // 127
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        // 
+        // set 50% pwm
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 1
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x01;    // point to page 1
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each pwm reg to 50%
+            cmdbuf[0] = 0x00;    // conf reg
+            for (int i = 0; i < 192; i++)
+                cmdbuf[i+1] = 127;    // pwm value
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 193);
+        }
+
+        // 
+        // set all leds on
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {        
+            // set conf cmd reg to page 0
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x00;    // point to page 0
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each led to on
+            cmdbuf[0] = 0x00;    // conf reg
+            for (int i = 0; i < 24; i++)
+                cmdbuf[i+1] = 0xff;    // all ones
+
+            // cmdbuf[1] = 0x00;    // sw1 low
+            // cmdbuf[2] = 0x00;    // sw1 high
+            // cmdbuf[3] = 0x00;    // sw2 low
+            // cmdbuf[4] = 0x00;    // sw2 high
+            // cmdbuf[5] = 0xff;    // sw3 low
+            // cmdbuf[6] = 0xff;    // sw3 high
+            // cmdbuf[7] = 0x00;    // sw4 low
+            // cmdbuf[8] = 0x00;    // sw4 high
+            // cmdbuf[9] = 0x00;    // sw5 low
+            // cmdbuf[10] = 0x00;    // sw5 high
+            // cmdbuf[11] = 0xff;    // sw6 low
+            // cmdbuf[12] = 0xff;    // sw6 high
+            // cmdbuf[13] = 0x00;    // sw7 low
+            // cmdbuf[14] = 0x00;    // sw7 high
+            // cmdbuf[15] = 0x00;    // sw8 low
+            // cmdbuf[16] = 0x00;    // sw8 high
+            // cmdbuf[17] = 0xff;    // sw9 low
+            // cmdbuf[18] = 0xff;    // sw9 high
+            // cmdbuf[19] = 0x00;    // sw10 low
+            // cmdbuf[20] = 0x00;    // sw10 high
+            // cmdbuf[21] = 0x00;    // sw11 low
+            // cmdbuf[22] = 0x00;    // sw11 high
+            // cmdbuf[23] = 0xff;    // sw12 low
+            // cmdbuf[24] = 0xff;    // sw12 high
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 25);
+        }
+
+        if (error)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                Led_On();
+                Wait_ms(125);
+                Led_Off();
+                Wait_ms(125);
+            }
+            I2C1_Reset ();
+        }
+        else
+            Led_On();
+    
+        Wait_ms(20000);
+    }
+}
+
+
+void TF_I2C_IS31_P3_Low_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_ON;
+    SDB_CH2_ON;
+    SDB_CH3_OFF;
+    SDB_CH4_ON;
+    I2C1_Init();
+    Wait_ms(100);
+
+    unsigned char cmdbuf [194] = { 0 };
+    int error = 0;
+    unsigned char addr = 0xB8;
+
+    I2C1_Reset ();
+
+    while (1)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Led_On();
+            Wait_ms(250);
+            Led_Off();
+            Wait_ms(250);
+        }
+
+        error = 0;
+
+        //
+        // leave from shutdown
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf reg to normal
+            cmdbuf[0] = 0x00;    // conf reg
+            cmdbuf[1] = 0x01;    // shutdown to normal
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        //
+        // set global current reg
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 3
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x03;    // point to page 3
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set gcc reg to 127
+            cmdbuf[0] = 0x01;    // gcc reg
+            cmdbuf[1] = 127;    // 127
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        // 
+        // set 50% pwm
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set conf cmd reg to page 1
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x01;    // point to page 1
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each pwm reg to 50%
+            cmdbuf[0] = 0x00;    // conf reg
+            for (int i = 0; i < 192; i++)
+                cmdbuf[i+1] = 127;    // pwm value
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 193);
+        }
+
+        // 
+        // set all leds on
+        //
+        if (!error)
+        {
+            // unlock cmd reg
+            cmdbuf[0] = 0xFE;    // register write lock
+            cmdbuf[1] = 0xC5;    // write enable once
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {        
+            // set conf cmd reg to page 0
+            cmdbuf[0] = 0xFD;    // conf cmd reg
+            cmdbuf[1] = 0x00;    // point to page 0
+            error = I2C1_SendMultiByte (cmdbuf, addr, 2);
+        }
+
+        if (!error)
+        {
+            // set each led to on
+            cmdbuf[0] = 0x00;    // conf reg
+            for (int i = 0; i < 24; i++)
+                cmdbuf[i+1] = 0xff;    // all ones
+
+            // cmdbuf[1] = 0x00;    // sw1 low
+            // cmdbuf[2] = 0x00;    // sw1 high
+            // cmdbuf[3] = 0x00;    // sw2 low
+            // cmdbuf[4] = 0x00;    // sw2 high
+            // cmdbuf[5] = 0xff;    // sw3 low
+            // cmdbuf[6] = 0xff;    // sw3 high
+            // cmdbuf[7] = 0x00;    // sw4 low
+            // cmdbuf[8] = 0x00;    // sw4 high
+            // cmdbuf[9] = 0x00;    // sw5 low
+            // cmdbuf[10] = 0x00;    // sw5 high
+            // cmdbuf[11] = 0xff;    // sw6 low
+            // cmdbuf[12] = 0xff;    // sw6 high
+            // cmdbuf[13] = 0x00;    // sw7 low
+            // cmdbuf[14] = 0x00;    // sw7 high
+            // cmdbuf[15] = 0x00;    // sw8 low
+            // cmdbuf[16] = 0x00;    // sw8 high
+            // cmdbuf[17] = 0xff;    // sw9 low
+            // cmdbuf[18] = 0xff;    // sw9 high
+            // cmdbuf[19] = 0x00;    // sw10 low
+            // cmdbuf[20] = 0x00;    // sw10 high
+            // cmdbuf[21] = 0x00;    // sw11 low
+            // cmdbuf[22] = 0x00;    // sw11 high
+            // cmdbuf[23] = 0xff;    // sw12 low
+            // cmdbuf[24] = 0xff;    // sw12 high
+    
+            error = I2C1_SendMultiByte (cmdbuf, addr, 25);
+        }
+
+        if (error)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                Led_On();
+                Wait_ms(125);
+                Led_Off();
+                Wait_ms(125);
+            }
+            I2C1_Reset ();
+        }
+        else
+            Led_On();
+    
+        Wait_ms(20000);
+    }
+}
+
+
+void TF_I2C_IS31_P4_Low_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_ON;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_OFF;
+    I2C1_Init();
+    Wait_ms(100);
+
+    unsigned char cmdbuf [194] = { 0 };
+    int error = 0;
+    unsigned char addr = 0xBE;
 
     I2C1_Reset ();
 
@@ -1034,6 +1554,102 @@ void TF_I2C_IS31_Low_Level_Int (void)
     }
 }
 
+
+void TF_I2C_IS31_P3_High_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_OFF;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_ON;
+    I2C1_Init();
+    Wait_ms(100);
+
+    I2C1_Reset ();
+
+
+    for (int i = 0; i < 3; i++)
+    {
+        Led_On();
+        Wait_ms(250);
+        Led_Off();
+        Wait_ms(250);
+    }
+
+    IS31_Init(I2C_ADDR_P3);
+    
+    while (1)
+    {
+
+        // set all red
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 255, 0, 0);
+    
+        Wait_ms(10000);
+
+        // set all green
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 255, 0);
+    
+        Wait_ms(10000);
+        
+        // set all blue
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 0, 255);
+    
+        Wait_ms(10000);
+
+        IS31_SetLed_AllOff(I2C_ADDR_P3);
+        
+        // dimmer red
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 16, 0, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 128, 0, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 255, 0, 0);
+        Wait_ms(1000);
+        
+        IS31_SetLed_AllOff(I2C_ADDR_P3);
+
+        // dimmer green
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 16, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 128, 0);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 255, 0);
+        Wait_ms(1000);
+        
+        IS31_SetLed_AllOff(I2C_ADDR_P3);
+
+        // dimmer blue
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 0, 16);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 0, 128);
+        Wait_ms(1000);
+        
+        for (int i = 0; i < 48; i++)
+            IS31_SetLedRGB (I2C_ADDR_P3, i, 0, 0, 255);
+        Wait_ms(1000);        
+
+        IS31_SetLed_AllOff(I2C_ADDR_P3);
+                
+    }
+}
 
 // void TF_I2C_IS31 (void)
 // {

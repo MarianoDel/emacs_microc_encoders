@@ -15,7 +15,12 @@
 
 #include "tim.h"
 #include "gpio.h"
+#include "i2c.h"
+
+#include "is31_handler.h"
 #include "test_functions.h"
+#include "display.h"
+#include "comms.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -86,31 +91,85 @@ int main (void)
     // UsartChannel2Config ();
 
     // char buff [120];
-    // char buff_tx [128];            
+    // char buff_tx [128];
+    unsigned char encoder1 = 0;
+    unsigned char encoder2 = 0;
+
+    SDB_CH1_OFF;
+    SDB_CH2_OFF;
+    SDB_CH3_OFF;
+    SDB_CH4_OFF;
+
+    I2C1_Init();
+    Wait_ms(100);
+    I2C1_Reset ();
+
+    I2C2_Init();
+    Wait_ms(100);
+    I2C2_Reset ();
+    
+    for (int i = 0; i < 3; i++)
+    {
+        Led_On();
+        Wait_ms(250);
+        Led_Off();
+        Wait_ms(250);
+    }
+
+    IS31_Init (I2C_ADDR_P1);
+    IS31_Init (I2C_ADDR_P2);
+    IS31_Init (I2C_ADDR_P3);
+    IS31_Init (I2C_ADDR_P4);        
     
     //-- Main Loop --------------------------
-    // while (1)
-    // {
-    //     // update the channels & rpi comms
-    //     Comms_Update ();
+    DisplayUpdate (ENCODER_DISPLAY_1, encoder1);
+    // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);
+    DisplayUpdate (ENCODER_DISPLAY_2, encoder2);
+    // Comms_Send_Encoder_Data (ENCODER_DISPLAY_2, encoder2);
 
-    //     // channels bridge
-    //     if (UsartChannel1HaveData())
-    //     {
-    //         UsartChannel1HaveDataReset();
-    //         UsartChannel1ReadBuffer(buff, 128);
-    //         sprintf(buff_tx,"ch1 %s\n", buff);
-    //         UsartRpiSend(buff_tx);
-    //     }
+    while (1)
+    {
+        // first encoder
+        if (CheckCW (ENCODER_NUM_1))
+        {
+            if (encoder1)
+                encoder1--;
 
-    //     if (UsartChannel2HaveData())
-    //     {
-    //         UsartChannel2HaveDataReset();
-    //         UsartChannel2ReadBuffer(buff, 128);
-    //         sprintf(buff_tx,"ch2 %s\n", buff);
-    //         UsartRpiSend(buff_tx);
-    //     }
-    // }
+            DisplayUpdate (ENCODER_DISPLAY_1, encoder1);
+            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);
+        }
+
+        if (CheckCCW (ENCODER_NUM_1))
+        {
+            if (encoder1 < 5)
+                encoder1++;
+
+            DisplayUpdate (ENCODER_DISPLAY_1, encoder1);
+            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);
+        }
+
+        // second encoder
+        if (CheckCW (ENCODER_NUM_2))
+        {
+            if (encoder2)
+                encoder2--;
+
+            DisplayUpdate (ENCODER_DISPLAY_2, encoder2);
+            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_2, encoder2);
+        }
+
+        if (CheckCCW (ENCODER_NUM_2))
+        {
+            if (encoder2 < 5)
+                encoder2++;
+
+            DisplayUpdate (ENCODER_DISPLAY_2, encoder2);
+            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_2, encoder2);
+        }
+        
+        Hard_Update_Encoders ();            
+        
+    }
 }
 
 //--- End of Main ---//
