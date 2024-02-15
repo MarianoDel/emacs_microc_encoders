@@ -421,7 +421,7 @@ void IS31_SetPix (unsigned char addr, unsigned char sw, unsigned char cs, unsign
 }
 
 
-// sw1 = 0 sw16 = 15; cs1 = 0 cs16 = 15; 
+// sw1 = 0 sw12 = 11; cs1 = 0 cs16 = 15; 
 void IS31_OnOff_Coordinate (unsigned char sw,
                             unsigned char cs,
                             unsigned char * reg_pos,
@@ -439,12 +439,13 @@ void IS31_OnOff_Coordinate (unsigned char sw,
 }
 
 
-// sw1 = 0 sw16 = 15; cs1 = 0 cs16 = 15;
+// sw1 = 0 sw12 = 11; cs1 = 0 cs16 = 15;
 unsigned char IS31_Pwm_Coordinate (unsigned char sw, unsigned char cs)
 {
     unsigned short reg_pos = 0;
     
-    reg_pos = (sw + 1) * (cs + 1) - 1;
+    reg_pos = sw * 16;
+    reg_pos += cs;
 
     return (unsigned char) reg_pos;
 }

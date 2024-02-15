@@ -207,6 +207,20 @@ tests:
 	./a.out
 
 
+tests_is31:
+	# compile first modules in this test
+	# first module objects to test
+	gcc -c --coverage src/is31_handler.c -I. $(INCDIR) $(DDEFS)
+	# gcc -c src/utils.c -I. $(INCDIR)
+	# second auxiliary helper modules
+	gcc -c src/tests_ok.c -I $(INCDIR)
+	# gcc -c src/tests_mock_usart.c -I $(INCDIR)
+	gcc --coverage src/tests_is31.c is31_handler.o tests_ok.o -I $(INCDIR) $(DDEFS)
+	./a.out
+	# process coverage
+	gcov is31_handler.c -m
+
+
 tests_treatment:
 	# compile first modules in this test
 	# first module objects to test

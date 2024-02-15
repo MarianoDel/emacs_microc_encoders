@@ -61,6 +61,8 @@ void TF_I2C_IS31_P3_Low_Level (void);
 void TF_I2C_IS31_P4_Low_Level (void);
 
 void TF_I2C_IS31_P1_High_Level (void);
+void TF_I2C_IS31_P1_P4_High_Level (void);
+
 void TF_I2C_IS31_One_by_One_High_Level (void);
 void TF_I2C_IS31_Low_Level_Int (void);
 void TF_I2C_IS31 (void);
@@ -92,7 +94,8 @@ void TF_Hardware_Tests (void)
     // TF_I2C_IS31_P3_Low_Level ();
     // TF_I2C_IS31_P4_Low_Level ();
     
-    TF_I2C_IS31_P1_High_Level ();
+    // TF_I2C_IS31_P1_High_Level ();
+    TF_I2C_IS31_P1_P4_High_Level ();
     // TF_I2C_IS31_One_by_One_High_Level ();
     // TF_I2C_IS31_Low_Level_Int ();
     // TF_I2C_IS31 ();
@@ -538,148 +541,132 @@ void TF_I2C_IS31_P1_High_Level (void)
         Wait_ms(250);
     }
 
-    unsigned char cmdbuf [194] = { 0 };
     unsigned char addr = 0xA0;
     
     IS31_Init(I2C_ADDR_P1);
 
-    // for (int i = 0; i < 192; i++)
-    //     IS31_SetPwm_Register (addr, i, 127);
-    
-    // // set all red sw1 & cs1 - cs12
-    // for (int i = 0; i < 12; i++)
-    //     IS31_SetPix (addr, 0, i, 127);
-
+    // set all red sw1 & cs1 - cs12
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (addr, 0, i, 127);
+        
     // set all red sw4 & cs1 - cs12    
     for (int i = 0; i < 12; i++)
         IS31_SetPix (addr, 3, i, 127);
 
-    // // set all red sw7 & cs1 - cs12    
-    // for (int i = 0; i < 12; i++)
-    //     IS31_SetPix (addr, 6, i, 127);
+    // set all red sw7 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (addr, 6, i, 127);
     
-    // // set all red sw10 & cs1 - cs12    
-    // for (int i = 0; i < 12; i++)
-    //     IS31_SetPix (addr, 9, i, 127);
+    // set all red sw10 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (addr, 9, i, 127);
     
     while (1);
 
+}
+
+
+void TF_I2C_IS31_P1_P4_High_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_OFF;
+    SDB_CH2_OFF;
+    SDB_CH3_OFF;
+    SDB_CH4_OFF;
+
+    I2C1_Init();
+    Wait_ms(100);
+    I2C1_Reset ();
+
+
+    for (int i = 0; i < 3; i++)
+    {
+        Led_On();
+        Wait_ms(250);
+        Led_Off();
+        Wait_ms(250);
+    }
+
     
-    // 
-    // set all leds on
-    //
-    // unlock cmd reg
-    cmdbuf[0] = 0xFE;    // register write lock
-    cmdbuf[1] = 0xC5;    // write enable once
-    I2C1_SendMultiByte (cmdbuf, addr, 2);
+    IS31_Init(I2C_ADDR_P1);
+    IS31_Init(I2C_ADDR_P2);
+    IS31_Init(I2C_ADDR_P3);
+    IS31_Init(I2C_ADDR_P4);
 
-    // set conf cmd reg to page 0
-    cmdbuf[0] = 0xFD;    // conf cmd reg
-    cmdbuf[1] = 0x00;    // point to page 0
-    I2C1_SendMultiByte (cmdbuf, addr, 2);
+    // set all red sw1 & cs1 - cs12
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P1, 0, i, 127);
+        
+    // set all red sw4 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P1, 3, i, 127);
 
-    // set each led to on
-    cmdbuf[0] = 0x00;    // conf reg
-
-    // all blue
-    cmdbuf[1] = 0x00;    // sw1 low
-    cmdbuf[2] = 0x00;    // sw1 high
-    cmdbuf[3] = 0x00;    // sw2 low
-    cmdbuf[4] = 0x00;    // sw2 high
-    cmdbuf[5] = 0xff;    // sw3 low
-    cmdbuf[6] = 0xff;    // sw3 high
-    cmdbuf[7] = 0x00;    // sw4 low
-    cmdbuf[8] = 0x00;    // sw4 high
-    cmdbuf[9] = 0x00;    // sw5 low
-    cmdbuf[10] = 0x00;    // sw5 high
-    cmdbuf[11] = 0xff;    // sw6 low
-    cmdbuf[12] = 0xff;    // sw6 high
-    cmdbuf[13] = 0x00;    // sw7 low
-    cmdbuf[14] = 0x00;    // sw7 high
-    cmdbuf[15] = 0x00;    // sw8 low
-    cmdbuf[16] = 0x00;    // sw8 high
-    cmdbuf[17] = 0xff;    // sw9 low
-    cmdbuf[18] = 0xff;    // sw9 high
-    cmdbuf[19] = 0x00;    // sw10 low
-    cmdbuf[20] = 0x00;    // sw10 high
-    cmdbuf[21] = 0x00;    // sw11 low
-    cmdbuf[22] = 0x00;    // sw11 high
-    cmdbuf[23] = 0xff;    // sw12 low
-    cmdbuf[24] = 0xff;    // sw12 high
+    // set all red sw7 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P1, 6, i, 127);
     
-    I2C1_SendMultiByte (cmdbuf, addr, 25);
+    // set all red sw10 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P1, 9, i, 127);
 
+    Wait_ms (1000);
+    
+    // set all red sw1 & cs1 - cs12
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P2, 0, i, 127);
+        
+    // set all red sw4 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P2, 3, i, 127);
+
+    // set all red sw7 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P2, 6, i, 127);
+    
+    // set all red sw10 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P2, 9, i, 127);
+
+    Wait_ms (1000);
+    
+    // set all red sw1 & cs1 - cs12
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P3, 0, i, 127);
+        
+    // set all red sw4 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P3, 3, i, 127);
+
+    // set all red sw7 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P3, 6, i, 127);
+    
+    // set all red sw10 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P3, 9, i, 127);
+
+    Wait_ms (1000);    
+
+    // set all red sw1 & cs1 - cs12
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P4, 0, i, 127);
+        
+    // set all red sw4 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P4, 3, i, 127);
+
+    // set all red sw7 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P4, 6, i, 127);
+    
+    // set all red sw10 & cs1 - cs12    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P4, 9, i, 127);
+    
     while (1);
-    
-    // while (1)
-    // {
 
-    //     // set all red
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 255, 0, 0);
-    
-    //     Wait_ms(10000);
-
-    //     // set all green
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 255, 0);
-    
-    //     Wait_ms(10000);
-        
-    //     // set all blue
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 255);
-    
-    //     Wait_ms(10000);
-
-    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
-        
-    //     // dimmer red
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 16, 0, 0);
-    //     Wait_ms(1000);
-        
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 128, 0, 0);
-    //     Wait_ms(1000);
-        
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 255, 0, 0);
-    //     Wait_ms(1000);
-        
-    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
-
-    //     // dimmer green
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 16, 0);
-    //     Wait_ms(1000);
-        
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 128, 0);
-    //     Wait_ms(1000);
-        
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 255, 0);
-    //     Wait_ms(1000);
-        
-    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
-
-    //     // dimmer blue
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 16);
-    //     Wait_ms(1000);
-        
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 128);
-    //     Wait_ms(1000);
-        
-    //     for (int i = 0; i < 48; i++)
-    //         IS31_SetLedRGB (I2C_ADDR_P1, i, 0, 0, 255);
-    //     Wait_ms(1000);        
-
-    //     IS31_SetLed_AllOff(I2C_ADDR_P1);
-                
-    // }
 }
 
 
