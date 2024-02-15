@@ -182,6 +182,16 @@
 #define ENCODER_NUM_7    6
 #define ENCODER_NUM_8    7
 
+#define ENCODER_FRQ_P1    ENCODER_NUM_1
+#define ENCODER_FRQ_P2    ENCODER_NUM_3
+#define ENCODER_FRQ_P3    ENCODER_NUM_5
+#define ENCODER_FRQ_P4    ENCODER_NUM_7
+
+#define ENCODER_PWR_P1    ENCODER_NUM_2
+#define ENCODER_PWR_P2    ENCODER_NUM_4
+#define ENCODER_PWR_P3    ENCODER_NUM_6
+#define ENCODER_PWR_P4    ENCODER_NUM_8
+
 typedef enum {
     SW_NO = 0,
     SW_MIN,

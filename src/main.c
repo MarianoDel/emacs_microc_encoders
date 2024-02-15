@@ -41,7 +41,7 @@ volatile unsigned short wait_ms_var = 0;
 // Module Private Functions ----------------------------------------------------
 void TimingDelay_Decrement(void);
 void SysTickError (void);
-
+void CheckEncoder (unsigned char encoder_index, unsigned char * encoder_value);
 
 
 // Module Functions ------------------------------------------------------------
@@ -55,7 +55,7 @@ int main (void)
         SysTickError();
 
     // Hardware Tests
-    TF_Hardware_Tests ();
+    // TF_Hardware_Tests ();
 
     // --- main program inits. ---
     // //-- DMA configuration.
@@ -92,8 +92,14 @@ int main (void)
 
     // char buff [120];
     // char buff_tx [128];
-    unsigned char encoder1 = 0;
-    unsigned char encoder2 = 0;
+    unsigned char freq_p1 = 0;
+    unsigned char freq_p2 = 0;
+    unsigned char freq_p3 = 0;
+    unsigned char freq_p4 = 0;    
+    unsigned char power_p1 = 0;
+    unsigned char power_p2 = 0;
+    unsigned char power_p3 = 0;
+    unsigned char power_p4 = 0;    
 
     SDB_CH1_OFF;
     SDB_CH2_OFF;
@@ -122,50 +128,36 @@ int main (void)
     IS31_Init (I2C_ADDR_P4);        
     
     //-- Main Loop --------------------------
-    DisplayUpdate (ENCODER_DISPLAY_1, encoder1);
-    // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);
-    DisplayUpdate (ENCODER_DISPLAY_2, encoder2);
+    DisplayUpdate (ENCODER_FRQ_P1, freq_p1);
+    DisplayUpdate (ENCODER_FRQ_P2, freq_p2);
+    DisplayUpdate (ENCODER_FRQ_P3, freq_p3);
+    DisplayUpdate (ENCODER_FRQ_P4, freq_p4);
+
+    DisplayUpdate (ENCODER_PWR_P1, power_p1);
+    DisplayUpdate (ENCODER_PWR_P2, power_p2);
+    DisplayUpdate (ENCODER_PWR_P3, power_p3);
+    DisplayUpdate (ENCODER_PWR_P4, power_p4);    
+    
+    // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);    
     // Comms_Send_Encoder_Data (ENCODER_DISPLAY_2, encoder2);
 
     while (1)
     {
-        // first encoder
-        if (CheckCW (ENCODER_NUM_1))
-        {
-            if (encoder1)
-                encoder1--;
+        // first part
+        CheckEncoder (ENCODER_FRQ_P1, &freq_p1);
+        CheckEncoder (ENCODER_PWR_P1, &power_p1);
 
-            DisplayUpdate (ENCODER_DISPLAY_1, encoder1);
-            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);
-        }
+        // second part
+        CheckEncoder (ENCODER_FRQ_P2, &freq_p2);
+        CheckEncoder (ENCODER_PWR_P2, &power_p2);
 
-        if (CheckCCW (ENCODER_NUM_1))
-        {
-            if (encoder1 < 5)
-                encoder1++;
+        // third part
+        CheckEncoder (ENCODER_FRQ_P3, &freq_p3);
+        CheckEncoder (ENCODER_PWR_P3, &power_p3);
 
-            DisplayUpdate (ENCODER_DISPLAY_1, encoder1);
-            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);
-        }
-
-        // second encoder
-        if (CheckCW (ENCODER_NUM_2))
-        {
-            if (encoder2)
-                encoder2--;
-
-            DisplayUpdate (ENCODER_DISPLAY_2, encoder2);
-            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_2, encoder2);
-        }
-
-        if (CheckCCW (ENCODER_NUM_2))
-        {
-            if (encoder2 < 5)
-                encoder2++;
-
-            DisplayUpdate (ENCODER_DISPLAY_2, encoder2);
-            // Comms_Send_Encoder_Data (ENCODER_DISPLAY_2, encoder2);
-        }
+        // fourth part
+        CheckEncoder (ENCODER_FRQ_P4, &freq_p4);
+        CheckEncoder (ENCODER_PWR_P4, &power_p4);
         
         Hard_Update_Encoders ();            
         
@@ -176,6 +168,27 @@ int main (void)
 
 
 // Other Module Functions ------------------------------------------------------
+void CheckEncoder (unsigned char encoder_index, unsigned char * encoder_value)
+{
+    if (CheckCW (encoder_index))
+    {
+        if (*encoder_value)
+            *encoder_value -= 1;
+
+        DisplayUpdate (encoder_index, *encoder_value);
+        // Comms_Send_Encoder_Data (encoder_index, encoder1);
+    }
+
+    if (CheckCCW (encoder_index))
+    {
+        if (*encoder_value < 5)
+            *encoder_value += 1;
+
+        DisplayUpdate (encoder_index, *encoder_value);
+        // Comms_Send_Encoder_Data (encoder_index, encoder1);
+    }
+    
+}
 // extern void TF_Prot_Int_Handler (unsigned char ch);
 // void EXTI2_IRQHandler (void)
 // {

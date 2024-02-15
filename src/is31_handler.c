@@ -131,8 +131,8 @@
 
 // Globals ---------------------------------------------------------------------
 unsigned char cmdbuf [194];
-// unsigned char on_off_led [24 * 4] = { 0 };
-unsigned char on_off_led [24] = { 0 };
+unsigned char on_off_led [24 * 4] = { 0 };
+// unsigned char on_off_led [24] = { 0 };
 unsigned short led_coordinate [48] = {LED01_CS_SW, LED02_CS_SW, LED03_CS_SW, LED04_CS_SW,
                                       LED05_CS_SW, LED06_CS_SW, LED07_CS_SW, LED08_CS_SW,
                                       LED09_CS_SW, LED10_CS_SW, LED11_CS_SW, LED12_CS_SW,
@@ -216,19 +216,19 @@ void IS31_SetLedRGB (unsigned char addr, unsigned char led, unsigned char r, uns
 
 void IS31_SetLed_All (unsigned char addr, unsigned char on_off)
 {
-    // unsigned char on_off_offset = 0;
+    unsigned char on_off_offset = 0;
     
     IS31_CmdReg_Unlock (addr);
     IS31_CmdReg_Page (addr, 0);
 
-    // if (addr == I2C_ADDR_P1)
-    //     on_off_offset = 0;    // OFFSET_P1
-    // else if (addr == I2C_ADDR_P2)
-    //     on_off_offset = 24;    //OFFSET_P2
-    // else if (addr == I2C_ADDR_P3)
-    //     on_off_offset = 48;    //OFFSET_P3
-    // else
-    //     on_off_offset = 72;    //OFFSET_P4
+    if (addr == I2C_ADDR_P1)
+        on_off_offset = 0;    // OFFSET_P1
+    else if (addr == I2C_ADDR_P2)
+        on_off_offset = 24;    //OFFSET_P2
+    else if (addr == I2C_ADDR_P3)
+        on_off_offset = 48;    //OFFSET_P3
+    else
+        on_off_offset = 72;    //OFFSET_P4
     
     // set each led to on
     cmdbuf[0] = 0x00;    // conf reg
@@ -240,8 +240,7 @@ void IS31_SetLed_All (unsigned char addr, unsigned char on_off)
     for (int i = 0; i < 24; i++)
     {
         cmdbuf[i+1] = all_value;
-        // on_off_led[i+on_off_offset] = all_value;
-        on_off_led[i] = all_value;        
+        on_off_led[i+on_off_offset] = all_value;
     }
 
     I2C1_SendMultiByte (cmdbuf, addr, 25);    
@@ -251,19 +250,19 @@ void IS31_SetLed_All (unsigned char addr, unsigned char on_off)
 
 void IS31_SetLed_LowHalfOff (unsigned char addr)
 {
-    // unsigned char on_off_offset = 0;
+    unsigned char on_off_offset = 0;
     
     IS31_CmdReg_Unlock (addr);
     IS31_CmdReg_Page (addr, 0);
     
-    // if (addr == I2C_ADDR_P1)
-    //     on_off_offset = 0;    // OFFSET_P1
-    // else if (addr == I2C_ADDR_P2)
-    //     on_off_offset = 24;    //OFFSET_P2
-    // else if (addr == I2C_ADDR_P3)
-    //     on_off_offset = 48;    //OFFSET_P3
-    // else
-    //     on_off_offset = 72;    //OFFSET_P4
+    if (addr == I2C_ADDR_P1)
+        on_off_offset = 0;    // OFFSET_P1
+    else if (addr == I2C_ADDR_P2)
+        on_off_offset = 24;    //OFFSET_P2
+    else if (addr == I2C_ADDR_P3)
+        on_off_offset = 48;    //OFFSET_P3
+    else
+        on_off_offset = 72;    //OFFSET_P4
 
     // set each led to on
     cmdbuf[0] = 0x00;    // conf reg
@@ -271,8 +270,7 @@ void IS31_SetLed_LowHalfOff (unsigned char addr)
     for (int i = 0; i < 12; i++)
     {
         cmdbuf[i+1] = 0;
-        // on_off_led[i+on_off_offset] = 0;
-        on_off_led[i] = 0;        
+        on_off_led[i+on_off_offset] = 0;
     }
 
     I2C1_SendMultiByte (cmdbuf, addr, 13);
@@ -282,32 +280,30 @@ void IS31_SetLed_LowHalfOff (unsigned char addr)
 
 void IS31_SetLed_HighHalfOff (unsigned char addr)
 {
-    // unsigned char on_off_offset = 0;
+    unsigned char on_off_offset = 0;
     
     IS31_CmdReg_Unlock (addr);
     IS31_CmdReg_Page (addr, 0);
     
-    // if (addr == I2C_ADDR_P1)
-    //     on_off_offset = 0;    // OFFSET_P1
-    // else if (addr == I2C_ADDR_P2)
-    //     on_off_offset = 24;    //OFFSET_P2
-    // else if (addr == I2C_ADDR_P3)
-    //     on_off_offset = 48;    //OFFSET_P3
-    // else
-    //     on_off_offset = 72;    //OFFSET_P4
+    if (addr == I2C_ADDR_P1)
+        on_off_offset = 0;    // OFFSET_P1
+    else if (addr == I2C_ADDR_P2)
+        on_off_offset = 24;    //OFFSET_P2
+    else if (addr == I2C_ADDR_P3)
+        on_off_offset = 48;    //OFFSET_P3
+    else
+        on_off_offset = 72;    //OFFSET_P4
 
     // set each led to on
     cmdbuf[0] = 0x00;    // conf reg
     
     for (int i = 0; i < 12; i++)
-        // cmdbuf[i+1] = on_off_led[i+on_off_offset];
-        cmdbuf[i+1] = on_off_led[i];
+        cmdbuf[i+1] = on_off_led[i+on_off_offset];
 
     for (int i = 12; i < 24; i++)
     {
         cmdbuf[i+1] = 0;
-        // on_off_led[i+on_off_offset] = 0;
-        on_off_led[i] = 0;        
+        on_off_led[i+on_off_offset] = 0;
     }
 
     I2C1_SendMultiByte (cmdbuf, addr, 25);
@@ -379,19 +375,19 @@ void IS31_SetPwm_Register (unsigned char addr, unsigned char pwm_pos, unsigned c
 
 void IS31_SetPix (unsigned char addr, unsigned char sw, unsigned char cs, unsigned char pwm)
 {
-    // unsigned char on_off_offset = 0;
+    unsigned char on_off_offset = 0;
     unsigned char on_off_reg_pos = 0;
     unsigned char on_off_reg_val = 0;    
     unsigned char coor_pwm = 0;
 
-    // if (addr == I2C_ADDR_P1)
-    //     on_off_offset = 0;    // OFFSET_P1
-    // else if (addr == I2C_ADDR_P2)
-    //     on_off_offset = 24;    //OFFSET_P2
-    // else if (addr == I2C_ADDR_P3)
-    //     on_off_offset = 48;    //OFFSET_P3
-    // else
-    //     on_off_offset = 72;    //OFFSET_P4
+    if (addr == I2C_ADDR_P1)
+        on_off_offset = 0;    // OFFSET_P1
+    else if (addr == I2C_ADDR_P2)
+        on_off_offset = 24;    //OFFSET_P2
+    else if (addr == I2C_ADDR_P3)
+        on_off_offset = 48;    //OFFSET_P3
+    else
+        on_off_offset = 72;    //OFFSET_P4
     
     IS31_OnOff_Coordinate (sw, cs, &on_off_reg_pos, &on_off_reg_val);
     coor_pwm = IS31_Pwm_Coordinate (sw, cs);
@@ -399,10 +395,8 @@ void IS31_SetPix (unsigned char addr, unsigned char sw, unsigned char cs, unsign
     if (!pwm)
     {
         // set the pix off
-        // on_off_led[on_off_reg_pos + on_off_offset] &= (unsigned char) (~on_off_reg_val);
-        // on_off_reg_val = on_off_led[on_off_reg_pos + on_off_offset];
-        on_off_led[on_off_reg_pos] &= (unsigned char) (~on_off_reg_val);        
-        on_off_reg_val = on_off_led[on_off_reg_pos];        
+        on_off_led[on_off_reg_pos + on_off_offset] &= (unsigned char) (~on_off_reg_val);
+        on_off_reg_val = on_off_led[on_off_reg_pos + on_off_offset];
 
         IS31_SetOnOff_Register (addr, on_off_reg_pos, on_off_reg_val);
         return;
@@ -412,11 +406,8 @@ void IS31_SetPix (unsigned char addr, unsigned char sw, unsigned char cs, unsign
     IS31_SetPwm_Register (addr, coor_pwm, pwm);
 
     // set pix to on
-    // on_off_led[on_off_reg_pos + on_off_offset] |= on_off_reg_val;
-    // on_off_reg_val = on_off_led[on_off_reg_pos + on_off_offset];        
-    on_off_led[on_off_reg_pos] |= on_off_reg_val;
-    on_off_reg_val = on_off_led[on_off_reg_pos];
-
+    on_off_led[on_off_reg_pos + on_off_offset] |= on_off_reg_val;
+    on_off_reg_val = on_off_led[on_off_reg_pos + on_off_offset];        
     IS31_SetOnOff_Register (addr, on_off_reg_pos, on_off_reg_val);    
 }
 

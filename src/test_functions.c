@@ -61,6 +61,7 @@ void TF_I2C_IS31_P3_Low_Level (void);
 void TF_I2C_IS31_P4_Low_Level (void);
 
 void TF_I2C_IS31_P1_High_Level (void);
+void TF_I2C_IS31_P4_High_Level (void);
 void TF_I2C_IS31_P1_P4_High_Level (void);
 
 void TF_I2C_IS31_One_by_One_High_Level (void);
@@ -95,7 +96,9 @@ void TF_Hardware_Tests (void)
     // TF_I2C_IS31_P4_Low_Level ();
     
     // TF_I2C_IS31_P1_High_Level ();
-    TF_I2C_IS31_P1_P4_High_Level ();
+    // TF_I2C_IS31_P1_P4_High_Level ();
+
+    TF_I2C_IS31_P4_High_Level ();
     // TF_I2C_IS31_One_by_One_High_Level ();
     // TF_I2C_IS31_Low_Level_Int ();
     // TF_I2C_IS31 ();
@@ -664,6 +667,62 @@ void TF_I2C_IS31_P1_P4_High_Level (void)
     // set all red sw10 & cs1 - cs12    
     for (int i = 0; i < 12; i++)
         IS31_SetPix (I2C_ADDR_P4, 9, i, 127);
+    
+    while (1);
+
+}
+
+
+void TF_I2C_IS31_P4_High_Level (void)
+{
+    // dont use ints
+    Led_Off();
+
+    SDB_CH1_ON;
+    SDB_CH2_ON;
+    SDB_CH3_ON;
+    SDB_CH4_OFF;
+    I2C1_Init();
+    Wait_ms(100);
+
+    I2C1_Reset ();
+
+
+    for (int i = 0; i < 3; i++)
+    {
+        Led_On();
+        Wait_ms(250);
+        Led_Off();
+        Wait_ms(250);
+    }
+
+    IS31_Init(I2C_ADDR_P4);
+
+    // set all red sw1 & cs1 - cs12
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P4, 0, i, 127);
+
+    Wait_ms (1000);
+
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P4, 1, i, 127);
+
+    Wait_ms (1000);
+    
+    for (int i = 0; i < 12; i++)
+        IS31_SetPix (I2C_ADDR_P4, 2, i, 127);
+    
+    // set all red sw4 & cs1 - cs12    
+    // for (int i = 0; i < 12; i++)
+    //     IS31_SetPix (addr, 3, i, 127);
+
+    // set all red sw7 & cs1 - cs12    
+    // for (int i = 0; i < 12; i++)
+    //     IS31_SetPix (addr, 6, i, 127);
+    
+    // set all red sw10 & cs1 - cs12    
+    // for (int i = 0; i < 12; i++)
+    //     IS31_SetPix (addr, 9, i, 127);
     
     while (1);
 
