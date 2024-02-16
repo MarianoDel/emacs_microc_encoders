@@ -22,6 +22,11 @@
 #define RCC_I2C2_CLKEN    (RCC->APB1ENR |= 0x00400000)
 #define RCC_I2C2_CLKDIS    (RCC->APB1ENR &= ~0x00400000)
 
+#define RCC_I2C1_RST_SET    (RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST)
+#define RCC_I2C1_RST_REL    (RCC->APB1RSTR &= ~(RCC_APB1RSTR_I2C1RST))
+#define RCC_I2C2_RST_SET    (RCC->APB1RSTR |= RCC_APB1RSTR_I2C2RST)
+#define RCC_I2C2_RST_REL    (RCC->APB1RSTR &= ~(RCC_APB1RSTR_I2C2RST))
+
 #ifdef I2C_WITH_INTS
 typedef enum {
     wait_start,
@@ -58,6 +63,9 @@ void I2C1_Init (void)
     if (!RCC_I2C1_CLK)
         RCC_I2C1_CLKEN;
 
+    RCC_I2C1_RST_SET;
+    RCC_I2C1_RST_REL;
+    
     // Speed and Port options
     // APB freq = PCKL1 freq = 32MHz
     I2C1->CR2 = 32;
@@ -91,19 +99,6 @@ void I2C1_Init (void)
 #endif
 }
 
-
-void I2C1_Reset (void)
-{
-    if (I2C1->SR2 & I2C_SR2_BUSY)
-    {
-        unsigned short dummy = 0;
-        
-        I2C1->CR1 |= I2C_CR1_SWRST;
-        dummy = I2C1->SR2;
-        dummy &= I2C_SR2_BUSY;
-        I2C1->CR1 &= ~(I2C_CR1_SWRST);
-    }
-}
 
 void I2C1_SendByte (unsigned char addr, unsigned char data)
 {
@@ -359,6 +354,9 @@ void I2C2_Init (void)
     if (!RCC_I2C2_CLK)
         RCC_I2C2_CLKEN;
 
+    RCC_I2C2_RST_SET;
+    RCC_I2C2_RST_REL;
+    
     // Speed and Port options
     // APB freq = PCKL1 freq = 32MHz
     I2C2->CR2 = 32;
@@ -390,20 +388,6 @@ void I2C2_Init (void)
     NVIC_EnableIRQ(I2C2_EV_IRQn);
     NVIC_SetPriority(I2C2_EV_IRQn, 8);
 #endif
-}
-
-
-void I2C2_Reset (void)
-{
-    if (I2C2->SR2 & I2C_SR2_BUSY)
-    {
-        unsigned short dummy = 0;
-        
-        I2C2->CR1 |= I2C_CR1_SWRST;
-        dummy = I2C2->SR2;
-        dummy &= I2C_SR2_BUSY;
-        I2C2->CR1 &= ~(I2C_CR1_SWRST);
-    }
 }
 
 

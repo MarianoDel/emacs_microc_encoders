@@ -28,6 +28,8 @@
 
 // Module Exported Functions --------------------------------------------------
 void DisplayUpdate (unsigned char encoder_dispay, unsigned char encoder_position);
+void DisplayUpdateFreq (unsigned char encoder_display, unsigned char encoder_position);
+void DisplayUpdatePwr (unsigned char encoder_display, unsigned char encoder_position);
 void CommsUpdate (unsigned char encoder_dispay, unsigned char encoder_position);
 
 

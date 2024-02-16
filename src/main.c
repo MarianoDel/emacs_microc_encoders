@@ -41,7 +41,8 @@ volatile unsigned short wait_ms_var = 0;
 // Module Private Functions ----------------------------------------------------
 void TimingDelay_Decrement(void);
 void SysTickError (void);
-void CheckEncoder (unsigned char encoder_index, unsigned char * encoder_value);
+void CheckEncoderFreq (unsigned char encoder_index, unsigned char * encoder_value);
+void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value);
 
 
 // Module Functions ------------------------------------------------------------
@@ -108,12 +109,10 @@ int main (void)
 
     I2C1_Init();
     Wait_ms(100);
-    I2C1_Reset ();
 
     I2C2_Init();
     Wait_ms(100);
-    I2C2_Reset ();
-    
+
     for (int i = 0; i < 3; i++)
     {
         Led_On();
@@ -128,10 +127,10 @@ int main (void)
     IS31_Init (I2C_ADDR_P4);        
     
     //-- Main Loop --------------------------
-    DisplayUpdate (ENCODER_FRQ_P1, freq_p1);
-    DisplayUpdate (ENCODER_FRQ_P2, freq_p2);
-    DisplayUpdate (ENCODER_FRQ_P3, freq_p3);
-    DisplayUpdate (ENCODER_FRQ_P4, freq_p4);
+    DisplayUpdateFreq (ENCODER_FRQ_P1, freq_p1);
+    DisplayUpdateFreq (ENCODER_FRQ_P2, freq_p2);
+    DisplayUpdateFreq (ENCODER_FRQ_P3, freq_p3);
+    DisplayUpdateFreq (ENCODER_FRQ_P4, freq_p4);
 
     DisplayUpdate (ENCODER_PWR_P1, power_p1);
     DisplayUpdate (ENCODER_PWR_P2, power_p2);
@@ -144,20 +143,20 @@ int main (void)
     while (1)
     {
         // first part
-        CheckEncoder (ENCODER_FRQ_P1, &freq_p1);
-        CheckEncoder (ENCODER_PWR_P1, &power_p1);
+        CheckEncoderFreq (ENCODER_FRQ_P1, &freq_p1);
+        CheckEncoderPwr (ENCODER_PWR_P1, &power_p1);
 
         // second part
-        CheckEncoder (ENCODER_FRQ_P2, &freq_p2);
-        CheckEncoder (ENCODER_PWR_P2, &power_p2);
+        CheckEncoderFreq (ENCODER_FRQ_P2, &freq_p2);
+        CheckEncoderPwr (ENCODER_PWR_P2, &power_p2);
 
         // third part
-        CheckEncoder (ENCODER_FRQ_P3, &freq_p3);
-        CheckEncoder (ENCODER_PWR_P3, &power_p3);
+        CheckEncoderFreq (ENCODER_FRQ_P3, &freq_p3);
+        CheckEncoderPwr (ENCODER_PWR_P3, &power_p3);
 
         // fourth part
-        CheckEncoder (ENCODER_FRQ_P4, &freq_p4);
-        CheckEncoder (ENCODER_PWR_P4, &power_p4);
+        CheckEncoderFreq (ENCODER_FRQ_P4, &freq_p4);
+        CheckEncoderPwr (ENCODER_PWR_P4, &power_p4);
         
         Hard_Update_Encoders ();            
         
@@ -168,15 +167,44 @@ int main (void)
 
 
 // Other Module Functions ------------------------------------------------------
-void CheckEncoder (unsigned char encoder_index, unsigned char * encoder_value)
+void CheckEncoderFreq (unsigned char encoder_index, unsigned char * encoder_value)
 {
+    int update = 0;
+    
     if (CheckCW (encoder_index))
     {
         if (*encoder_value)
             *encoder_value -= 1;
 
-        DisplayUpdate (encoder_index, *encoder_value);
-        // Comms_Send_Encoder_Data (encoder_index, encoder1);
+        update = 1;
+    }
+
+    if (CheckCCW (encoder_index))
+    {
+        if (*encoder_value < 11)
+            *encoder_value += 1;
+
+        update = 1;
+    }
+
+    if (update)
+    {
+        DisplayUpdateFreq (encoder_index, *encoder_value);
+        Comms_Send_Encoder_Data (encoder_index, *encoder_value);
+    }
+}
+
+
+void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value)
+{
+    int update = 0;
+    
+    if (CheckCW (encoder_index))
+    {
+        if (*encoder_value)
+            *encoder_value -= 1;
+
+        update = 1;
     }
 
     if (CheckCCW (encoder_index))
@@ -184,49 +212,15 @@ void CheckEncoder (unsigned char encoder_index, unsigned char * encoder_value)
         if (*encoder_value < 5)
             *encoder_value += 1;
 
-        DisplayUpdate (encoder_index, *encoder_value);
-        // Comms_Send_Encoder_Data (encoder_index, encoder1);
+        update = 1;
     }
-    
+
+    if (update)
+    {
+        DisplayUpdate (encoder_index, *encoder_value);
+        Comms_Send_Encoder_Data (encoder_index, *encoder_value);
+    }    
 }
-// extern void TF_Prot_Int_Handler (unsigned char ch);
-// void EXTI2_IRQHandler (void)
-// {
-//     if(EXTI->PR & EXTI_PR_PR2)    //Line2
-//     {
-//         Signals_Overcurrent_Handler (CH3);
-//         // TF_Prot_Int_Handler (3);    // PROT_CH3 for tests
-//         EXTI->PR |= EXTI_PR_PR2;
-//     }
-// }
-
-
-// void EXTI4_IRQHandler (void)
-// {
-//     if(EXTI->PR & EXTI_PR_PR4)    //Line4
-//     {
-//         Signals_Overcurrent_Handler (CH4);        
-//         // TF_Prot_Int_Handler (4);    // PROT_CH4 for tests
-//         EXTI->PR |= EXTI_PR_PR4;
-//     }
-// }
-
-
-// void EXTI15_10_IRQHandler (void)
-// {
-//     if(EXTI->PR & EXTI_PR_PR13)    //Line13
-//     {
-//         Signals_Overcurrent_Handler (CH2);
-//         // TF_Prot_Int_Handler (2);    // PROT_CH2 for tests
-//         EXTI->PR |= EXTI_PR_PR13;
-//     }
-//     else if (EXTI->PR & EXTI_PR_PR15)    //Line15
-//     {
-//         Signals_Overcurrent_Handler (CH1);        
-//         // TF_Prot_Int_Handler (1);    // PROT_CH1 for tests
-//         EXTI->PR |= EXTI_PR_PR15;
-//     }
-// }
 
 
 void TimingDelay_Decrement(void)

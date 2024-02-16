@@ -113,5 +113,73 @@ void DisplayUpdate (unsigned char encoder_display, unsigned char encoder_positio
 }
 
 
+void DisplayUpdateFreq (unsigned char encoder_display, unsigned char encoder_position)
+{
+    unsigned short center;
+
+    // check odd
+    // if (encoder_display & 0x01)    // 0 2 4 6 for freq
+    //     return;
+    
+    // encoder center
+    center = encoder_position * 2;
+
+    // unsigned char addr = 0;
+
+    switch (encoder_display)
+    {
+    case ENCODER_DISPLAY_1:
+        IS31_SetLed_HighHalfOff(I2C_ADDR_P1);
+        
+        center += 24;        
+        IS31_SetLedRGB (I2C_ADDR_P1, center + 0, 0, 255, 0);
+        IS31_SetLedRGB (I2C_ADDR_P1, center + 1, 255, 0, 0);
+        IS31_SetLedRGB (I2C_ADDR_P1, center + 2, 0, 255, 0);
+        break;
+        
+    case ENCODER_DISPLAY_2:
+        break;
+        
+    case ENCODER_DISPLAY_3:
+        IS31_SetLed_HighHalfOff(I2C_ADDR_P2);
+        
+        center += 24;        
+        IS31_SetLedRGB (I2C_ADDR_P2, center + 0, 0, 255, 0);
+        IS31_SetLedRGB (I2C_ADDR_P2, center + 1, 255, 0, 0);
+        IS31_SetLedRGB (I2C_ADDR_P2, center + 2, 0, 255, 0);
+        break;
+        
+    case ENCODER_DISPLAY_4:
+        break;
+        
+    case ENCODER_DISPLAY_5:
+        IS31_SetLed_HighHalfOff(I2C_ADDR_P3);
+        
+        center += 24;        
+        IS31_SetLedRGB (I2C_ADDR_P3, center + 0, 0, 255, 0);
+        IS31_SetLedRGB (I2C_ADDR_P3, center + 1, 255, 0, 0);
+        IS31_SetLedRGB (I2C_ADDR_P3, center + 2, 0, 255, 0);
+        break;
+    case ENCODER_DISPLAY_6:
+        break;
+        
+    case ENCODER_DISPLAY_7:
+        IS31_SetLed_HighHalfOff(I2C_ADDR_P4);
+        
+        center += 24;        
+        IS31_SetLedRGB (I2C_ADDR_P4, center + 0, 0, 255, 0);
+        IS31_SetLedRGB (I2C_ADDR_P4, center + 1, 255, 0, 0);
+        IS31_SetLedRGB (I2C_ADDR_P4, center + 2, 0, 255, 0);
+        break;
+        
+    case ENCODER_DISPLAY_8:
+        break;
+        
+    default:
+        break;
+    }
+}
+
+
 //--- end of file ---//
 

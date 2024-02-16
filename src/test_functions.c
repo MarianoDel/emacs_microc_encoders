@@ -48,25 +48,26 @@ void TF_Encoder_CheckSET2 (void);
 void TF_Encoder_CheckCW2 (void);
 void TF_Encoder_CheckCCW2 (void);
 
-void TF_I2C_Send_Data (void);
-void TF_I2C_Check_Address (void);
-void TF_I2C_Check_Specific_Address (void);
-void TF_I2C_Test_Gpio (void);
-// void TF_Oled_Screen (void);
-// void TF_Oled_Screen_Int (void);
+void TF_I2C1_Send_Data (void);
+void TF_I2C1_Check_Address (void);
+void TF_I2C1_Check_Specific_Address (void);
+void TF_I2C1_Test_Gpio (void);
 
-void TF_I2C_IS31_P1_Low_Level (void);
-void TF_I2C_IS31_P2_Low_Level (void);
-void TF_I2C_IS31_P3_Low_Level (void);
-void TF_I2C_IS31_P4_Low_Level (void);
+void TF_I2C2_Send_Data (void);
+void TF_I2C2_Check_Address (void);
+    
+void TF_I2C1_IS31_P1_Low_Level (void);
+void TF_I2C1_IS31_P2_Low_Level (void);
+void TF_I2C1_IS31_P3_Low_Level (void);
+void TF_I2C1_IS31_P4_Low_Level (void);
 
-void TF_I2C_IS31_P1_High_Level (void);
-void TF_I2C_IS31_P4_High_Level (void);
-void TF_I2C_IS31_P1_P4_High_Level (void);
+void TF_I2C1_IS31_P1_High_Level (void);
+void TF_I2C1_IS31_P4_High_Level (void);
+void TF_I2C1_IS31_P1_P4_High_Level (void);
 
-void TF_I2C_IS31_One_by_One_High_Level (void);
-void TF_I2C_IS31_Low_Level_Int (void);
-void TF_I2C_IS31 (void);
+void TF_I2C1_IS31_One_by_One_High_Level (void);
+void TF_I2C1_IS31_Low_Level_Int (void);
+void TF_I2C1_IS31 (void);
 
 void TF_IS31_Encoder (void);
 
@@ -85,23 +86,26 @@ void TF_Hardware_Tests (void)
     // TF_Encoder_CheckCW2 ();    
     // TF_Encoder_CheckCCW2 ();
 
-    // TF_I2C_Send_Data ();
-    // TF_I2C_Check_Address ();
-    // TF_I2C_Check_Specific_Address ();
-    // TF_I2C_Test_Gpio ();
+    // TF_I2C1_Send_Data ();
+    // TF_I2C1_Check_Address ();
+    // TF_I2C1_Check_Specific_Address ();
+    // TF_I2C1_Test_Gpio ();
 
-    // TF_I2C_IS31_P1_Low_Level ();
-    // TF_I2C_IS31_P2_Low_Level ();
-    // TF_I2C_IS31_P3_Low_Level ();
-    // TF_I2C_IS31_P4_Low_Level ();
+    TF_I2C2_Send_Data ();
+    // TF_I2C2_Check_Address ();
+
+    // TF_I2C1_IS31_P1_Low_Level ();
+    // TF_I2C1_IS31_P2_Low_Level ();
+    // TF_I2C1_IS31_P3_Low_Level ();
+    // TF_I2C1_IS31_P4_Low_Level ();
     
-    // TF_I2C_IS31_P1_High_Level ();
-    // TF_I2C_IS31_P1_P4_High_Level ();
+    // TF_I2C1_IS31_P1_High_Level ();
+    // TF_I2C1_IS31_P1_P4_High_Level ();
 
-    TF_I2C_IS31_P4_High_Level ();
-    // TF_I2C_IS31_One_by_One_High_Level ();
-    // TF_I2C_IS31_Low_Level_Int ();
-    // TF_I2C_IS31 ();
+    // TF_I2C1_IS31_P4_High_Level ();
+    // TF_I2C1_IS31_One_by_One_High_Level ();
+    // TF_I2C1_IS31_Low_Level_Int ();
+    // TF_I2C1_IS31 ();
 
     
 
@@ -237,7 +241,7 @@ void TF_Encoder_CheckCCW2 (void)
 }
 
 
-void TF_I2C_Send_Data (void)
+void TF_I2C1_Send_Data (void)
 {
     // dont use ints    
     I2C1_Init();
@@ -246,7 +250,7 @@ void TF_I2C_Send_Data (void)
     while (1)
     {
         Led_On();
-        I2C1_SendByte (I2C_ADDRESS_SLV, 0x55);
+        I2C1_SendByte (0xA0, 0x55);
         Led_Off();
         Wait_ms (30);
     }
@@ -254,7 +258,7 @@ void TF_I2C_Send_Data (void)
 }
 
 
-void TF_I2C_Check_Address (void)
+void TF_I2C1_Check_Address (void)
 {
     // dont use ints
     Led_Off();
@@ -288,7 +292,67 @@ void TF_I2C_Check_Address (void)
 }
 
 
-void TF_I2C_Test_Gpio (void)
+void TF_I2C2_Send_Data (void)
+{
+    // dont use ints    
+    I2C2_Init();
+    Wait_ms(100);
+    // I2C2_Reset ();
+
+    while (I2C2->SR2 & I2C_SR2_BUSY)
+    {
+        Led_On();
+        Wait_ms(100);
+        Led_Off();
+        Wait_ms(100);
+    }
+    
+    while (1)
+    {
+        Led_On();
+        I2C2_SendByte (0xA0, 0x55);
+        Led_Off();
+        Wait_ms (30);
+    }
+    
+}
+
+
+void TF_I2C2_Check_Address (void)
+{
+    // dont use ints
+    Led_Off();
+    
+    I2C2_Init();
+    Wait_ms(100);    
+    
+    while (1)
+    {
+        for (unsigned char i = 0; i < 128; i++)
+        {
+            // addr is right aligned
+            // b0 = 0 for write b0 = 1 for read
+            unsigned char addr = (i << 1) & 0xFE;    
+            if (I2C2_SendAddr(addr) == 1)
+            {
+                Led_On();
+                break;
+            }
+            
+            Wait_ms(1);
+            Led_Off();
+            Wait_ms(9);
+            // Wait_ms(10);
+        }
+
+        Wait_ms(999);
+        Led_Off();
+        
+    }
+}
+
+
+void TF_I2C1_Test_Gpio (void)
 {
     unsigned long int temp;
     
@@ -310,7 +374,7 @@ void TF_I2C_Test_Gpio (void)
 }
 
 
-void TF_I2C_Check_Specific_Address (void)
+void TF_I2C1_Check_Specific_Address (void)
 {
     // dont use ints
     Led_Off();
@@ -333,7 +397,7 @@ void TF_I2C_Check_Specific_Address (void)
 }
 
 
-void TF_I2C_IS31_P1_Low_Level (void)
+void TF_I2C1_IS31_P1_Low_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -521,7 +585,7 @@ void TF_I2C_IS31_P1_Low_Level (void)
 }
 
 
-void TF_I2C_IS31_P1_High_Level (void)
+void TF_I2C1_IS31_P1_High_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -569,7 +633,7 @@ void TF_I2C_IS31_P1_High_Level (void)
 }
 
 
-void TF_I2C_IS31_P1_P4_High_Level (void)
+void TF_I2C1_IS31_P1_P4_High_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -673,7 +737,7 @@ void TF_I2C_IS31_P1_P4_High_Level (void)
 }
 
 
-void TF_I2C_IS31_P4_High_Level (void)
+void TF_I2C1_IS31_P4_High_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -729,7 +793,7 @@ void TF_I2C_IS31_P4_High_Level (void)
 }
 
 
-void TF_I2C_IS31_One_by_One_High_Level (void)
+void TF_I2C1_IS31_One_by_One_High_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -907,7 +971,7 @@ void TF_IS31_Encoder (void)
 }
 
 
-void TF_I2C_IS31_P2_Low_Level (void)
+void TF_I2C1_IS31_P2_Low_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -1093,7 +1157,7 @@ void TF_I2C_IS31_P2_Low_Level (void)
 }
 
 
-void TF_I2C_IS31_P3_Low_Level (void)
+void TF_I2C1_IS31_P3_Low_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -1279,7 +1343,7 @@ void TF_I2C_IS31_P3_Low_Level (void)
 }
 
 
-void TF_I2C_IS31_P4_Low_Level (void)
+void TF_I2C1_IS31_P4_Low_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -1465,7 +1529,7 @@ void TF_I2C_IS31_P4_Low_Level (void)
 }
 
 
-void TF_I2C_IS31_Low_Level_Int (void)
+void TF_I2C1_IS31_Low_Level_Int (void)
 {
     // use with ints
     Led_Off();
@@ -1601,7 +1665,7 @@ void TF_I2C_IS31_Low_Level_Int (void)
 }
 
 
-void TF_I2C_IS31_P3_High_Level (void)
+void TF_I2C1_IS31_P3_High_Level (void)
 {
     // dont use ints
     Led_Off();
@@ -1697,7 +1761,7 @@ void TF_I2C_IS31_P3_High_Level (void)
     }
 }
 
-// void TF_I2C_IS31 (void)
+// void TF_I2C1_IS31 (void)
 // {
 //     // dont use ints
 //     Led_Off();
