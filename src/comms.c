@@ -61,7 +61,7 @@ void Comms_Send_Encoder_Data (unsigned char encoder_number, unsigned char positi
     char buff [100];
 
     sprintf(buff, "enc %d pos %d", encoder_number, position);
-    I2C2_SendMultiByte((unsigned char *) buff, 0x55, strlen(buff));        
+    I2C2_SendMultiByte((unsigned char *) buff, 0x44, strlen(buff));        
 }
 
 

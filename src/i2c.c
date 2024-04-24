@@ -47,12 +47,18 @@ typedef struct {
 
 
 // Globals ---------------------------------------------------------------------
-
+volatile unsigned char i2c_timeout = 0;
 
 // Module Private Functions ----------------------------------------------------
 
 
 // Module Funtions -------------------------------------------------------------
+void I2C_Timeouts (void)
+{
+    if (i2c_timeout)
+        i2c_timeout--;
+}
+
 ////////////////////
 // I2C1 FUNCTIONS //
 ////////////////////
@@ -476,16 +482,27 @@ unsigned char I2C2_SendAddr (unsigned char addr)
 // no ints
 unsigned char I2C2_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size)
 {
+    i2c_timeout = 5;
+    
     // check no master
     // while (I2C2->SR2 & I2C_SR2_MSL);
 
     // // wait no busy line
-    while (I2C2->SR2 & I2C_SR2_BUSY);
+    while ((I2C2->SR2 & I2C_SR2_BUSY) &&
+           (i2c_timeout));
+
+    if (!i2c_timeout)
+        return 1;
     
     // send START
     I2C2->CR1 |= I2C_CR1_START;
     // wait for START be sent
-    while (!(I2C2->SR1 & I2C_SR1_SB));
+    while ((!(I2C2->SR1 & I2C_SR1_SB)) &&
+           (i2c_timeout));
+
+    if (!i2c_timeout)
+        return 1;
+        
 
     I2C2->SR1 &= ~I2C_SR1_AF;    // reset NACK
 
@@ -505,7 +522,8 @@ unsigned char I2C2_SendMultiByte (unsigned char *pdata, unsigned char addr, unsi
         }
             
         if ((I2C2->SR1 & I2C_SR1_AF) ||
-            (I2C2->SR1 & I2C_SR1_TIMEOUT))
+            (I2C2->SR1 & I2C_SR1_TIMEOUT) ||
+            (!i2c_timeout))
         {
             error = 0;
             I2C2->CR1 |= I2C_CR1_STOP;
@@ -517,15 +535,103 @@ unsigned char I2C2_SendMultiByte (unsigned char *pdata, unsigned char addr, unsi
 
     for (int i = 0; i < size; i++)
     {
-        while (!(I2C2->SR1 & I2C_SR1_TXE));
+        while ((!(I2C2->SR1 & I2C_SR1_TXE)) &&
+               (i2c_timeout));
+
+        if (!i2c_timeout)
+        {
+            I2C2->CR1 |= I2C_CR1_STOP;
+            return 1;
+        }
+        
         I2C2->DR = *(pdata + i);
     }
 
     // wait to send STOP
-    while (!(I2C2->SR1 & I2C_SR1_TXE));
+    while ((!(I2C2->SR1 & I2C_SR1_TXE)) &&
+           (i2c_timeout));
+    
     I2C2->CR1 |= I2C_CR1_STOP;
     
     // while (I2C2->SR2 & I2C_SR2_MSL);
+    return 0;
+}
+
+
+unsigned char I2C2_ReadMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size)
+{
+    unsigned short dummy = 0;
+
+    i2c_timeout = 5;    
+    
+    // wait no busy line
+    while ((I2C2->SR2 & I2C_SR2_BUSY) &&
+           (i2c_timeout));
+
+    if (!i2c_timeout)
+        return 1;
+    
+    // send START
+    I2C2->CR1 |= I2C_CR1_START;
+    // wait for START be sent
+    while ((!(I2C2->SR1 & I2C_SR1_SB)) &&
+           (i2c_timeout));
+
+    if (!i2c_timeout)
+    {
+        I2C2->CR1 |= I2C_CR1_STOP;
+        return 1;
+    }
+
+    I2C2->SR1 &= ~I2C_SR1_AF;    // reset NACK
+
+    // activate ACK
+    I2C2->CR1 |= I2C_CR1_ACK;
+
+    // send slave addr is right aligned, with read flag
+    I2C2->DR = addr | 0x01;
+
+    while ((!(I2C2->SR1 & I2C_SR1_ADDR)) &&
+           (i2c_timeout));
+
+    if (!i2c_timeout)
+    {
+        I2C2->CR1 |= I2C_CR1_STOP;
+        return 1;
+    }    
+
+    dummy = I2C2->SR2;    //dummy read to clear ADDR
+    dummy++;
+
+    if ((I2C2->SR1 & I2C_SR1_AF) ||
+        (I2C2->SR1 & I2C_SR1_TIMEOUT))
+    {
+        I2C2->CR1 |= I2C_CR1_STOP;
+        return 1;
+    }
+
+    // wait for RxNE
+    for (int i = 0; i < size; i++)
+    {
+        while ((!(I2C2->SR1 & I2C_SR1_RXNE)) &&
+               (i2c_timeout));
+
+        if (!i2c_timeout)
+        {
+            I2C2->CR1 |= I2C_CR1_STOP;
+            return 1;
+        }    
+        
+        *(pdata + i) = I2C2->DR;
+
+        if (i == size - 2)
+        {
+            // deactivate ACK
+            I2C2->CR1 &= ~I2C_CR1_ACK;
+            I2C2->CR1 |= I2C_CR1_STOP;
+        }
+    }
+
     return 0;
 }
 

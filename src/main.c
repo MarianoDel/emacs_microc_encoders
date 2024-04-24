@@ -43,6 +43,7 @@ void TimingDelay_Decrement(void);
 void SysTickError (void);
 void CheckEncoderFreq (unsigned char encoder_index, unsigned char * encoder_value);
 void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value);
+void CheckEncodersInput (void);
 
 
 // Module Functions ------------------------------------------------------------
@@ -158,8 +159,14 @@ int main (void)
         CheckEncoderFreq (ENCODER_FRQ_P4, &freq_p4);
         CheckEncoderPwr (ENCODER_PWR_P4, &power_p4);
         
-        Hard_Update_Encoders ();            
-        
+        Hard_Update_Encoders ();
+
+        // check encoders input from rpi
+        if (!timer_standby)
+        {
+            timer_standby = 200;
+            CheckEncodersInput ();
+        }
     }
 }
 
@@ -223,6 +230,32 @@ void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value
 }
 
 
+unsigned char enc_buff [8];
+void CheckEncodersInput (void)
+{
+    unsigned char buff [8];
+
+    if (I2C2_ReadMultiByte (buff, 0x44 | 0x01, 8) == 0)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            if (buff [i] != enc_buff [i])
+            {
+                enc_buff[i] = buff[i];
+                if (i & 0x01)
+                {
+                    DisplayUpdate (i, enc_buff[i]);
+                }
+                else
+                {
+                    DisplayUpdateFreq (i, enc_buff[i]);                    
+                }
+            }
+        }
+    }
+}
+
+
 void TimingDelay_Decrement(void)
 {
     if (wait_ms_var)
@@ -236,6 +269,9 @@ void TimingDelay_Decrement(void)
     // Treatment_Timeouts ();
     
     Hard_Timeouts();
+
+    I2C_Timeouts ();
+    
     
 }
 

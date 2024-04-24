@@ -55,6 +55,9 @@ void TF_I2C1_Test_Gpio (void);
 
 void TF_I2C2_Send_Data (void);
 void TF_I2C2_Check_Address (void);
+void TF_I2C2_Check_Read_Write (void);
+void TF_I2C2_Address (void);
+void TF_I2C2_Check_Read_Eight (void);
     
 void TF_I2C1_IS31_P1_Low_Level (void);
 void TF_I2C1_IS31_P2_Low_Level (void);
@@ -91,8 +94,11 @@ void TF_Hardware_Tests (void)
     // TF_I2C1_Check_Specific_Address ();
     // TF_I2C1_Test_Gpio ();
 
-    TF_I2C2_Send_Data ();
+    // TF_I2C2_Send_Data ();
     // TF_I2C2_Check_Address ();
+    // TF_I2C2_Check_Read_Write ();
+    TF_I2C2_Check_Read_Eight ();
+    // TF_I2C2_Address ();
 
     // TF_I2C1_IS31_P1_Low_Level ();
     // TF_I2C1_IS31_P2_Low_Level ();
@@ -348,6 +354,69 @@ void TF_I2C2_Check_Address (void)
         Wait_ms(999);
         Led_Off();
         
+    }
+}
+
+
+void TF_I2C2_Address (void)
+{
+    // dont use ints
+    Led_Off();
+    
+    I2C2_Init();
+    Wait_ms(100);    
+    
+    while (1)
+    {
+        Led_On();
+        I2C2_SendAddr (0x44);
+        Led_Off();
+        Wait_ms(1000);
+    }
+}
+
+
+void TF_I2C2_Check_Read_Write (void)
+{
+    // dont use ints
+    Led_Off();
+    
+    I2C2_Init();
+    Wait_ms(100);    
+    
+    while (1)
+    {
+        Led_On ();
+        I2C2_SendAddr (0x44);
+        Wait_ms (1000);
+        Led_Off();
+        I2C2_SendAddr (0x44 | 0x01);
+        Wait_ms (1000);
+        
+        // I2C2_SendMultiByte ();
+    }
+}
+
+
+void TF_I2C2_Check_Read_Eight (void)
+{
+    unsigned char buff [10];
+    // dont use ints
+    Led_Off();
+    
+    I2C2_Init();
+    Wait_ms(100);    
+    
+    while (1)
+    {
+        Led_On ();
+        I2C2_SendAddr (0x44);
+        Wait_ms (1000);
+        Led_Off();
+        I2C2_ReadMultiByte (buff, 0x44 | 0x01, 8);
+        Wait_ms (1000);
+        
+        // I2C2_SendMultiByte ();
     }
 }
 

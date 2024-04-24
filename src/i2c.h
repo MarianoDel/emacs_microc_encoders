@@ -17,6 +17,8 @@
 
 
 // Module Exported Functions ---------------------------------------------------
+void I2C_Timeouts (void);
+
 void I2C1_Init (void);
 void I2C1_SendByte (unsigned char addr, unsigned char data);
 unsigned char I2C1_SendAddr (unsigned char addr);
@@ -28,6 +30,7 @@ void I2C2_Init (void);
 void I2C2_SendByte (unsigned char, unsigned char);
 unsigned char I2C2_SendAddr (unsigned char addr);
 unsigned char I2C2_SendMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size);
+unsigned char I2C2_ReadMultiByte (unsigned char *pdata, unsigned char addr, unsigned short size);
 
 #endif    /* _I2C_H_ */
 
