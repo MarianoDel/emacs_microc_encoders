@@ -30,7 +30,7 @@
 
 // Externals -------------------------------------------------------------------
 extern volatile unsigned short timer_standby;
-
+extern void IS31_SetPix (unsigned char addr, unsigned char sw, unsigned char cs, unsigned char pwm);
 
 // Globals ---------------------------------------------------------------------
 
@@ -482,7 +482,7 @@ void TF_I2C1_IS31_P1_Low_Level (void)
     int error = 0;
     unsigned char addr = 0xA0;
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     while (1)
@@ -644,7 +644,7 @@ void TF_I2C1_IS31_P1_Low_Level (void)
                 Led_Off();
                 Wait_ms(125);
             }
-            I2C1_Reset ();            
+            // I2C1_Reset ();            
         }
         else
             Led_On();
@@ -666,7 +666,7 @@ void TF_I2C1_IS31_P1_High_Level (void)
     I2C1_Init();
     Wait_ms(100);
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     for (int i = 0; i < 3; i++)
@@ -714,7 +714,7 @@ void TF_I2C1_IS31_P1_P4_High_Level (void)
 
     I2C1_Init();
     Wait_ms(100);
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     for (int i = 0; i < 3; i++)
@@ -818,7 +818,7 @@ void TF_I2C1_IS31_P4_High_Level (void)
     I2C1_Init();
     Wait_ms(100);
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     for (int i = 0; i < 3; i++)
@@ -874,7 +874,7 @@ void TF_I2C1_IS31_One_by_One_High_Level (void)
     I2C1_Init();
     Wait_ms(100);
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     for (int i = 0; i < 3; i++)
@@ -983,7 +983,7 @@ void TF_IS31_Encoder (void)
     I2C1_Init();
     Wait_ms(100);
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     for (int i = 0; i < 3; i++)
@@ -997,7 +997,7 @@ void TF_IS31_Encoder (void)
     IS31_Init(I2C_ADDR_P1);
 
     int encoder1_pos = 0;
-    int encoder2_pos = 0;
+    // int encoder2_pos = 0;
     int center = 0;
         
     while (1)
@@ -1056,7 +1056,7 @@ void TF_I2C1_IS31_P2_Low_Level (void)
     int error = 0;
     unsigned char addr = 0xA6;
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
     while (1)
     {
@@ -1216,7 +1216,7 @@ void TF_I2C1_IS31_P2_Low_Level (void)
                 Led_Off();
                 Wait_ms(125);
             }
-            I2C1_Reset ();
+            // I2C1_Reset ();
         }
         else
             Led_On();
@@ -1242,7 +1242,7 @@ void TF_I2C1_IS31_P3_Low_Level (void)
     int error = 0;
     unsigned char addr = 0xB8;
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
     while (1)
     {
@@ -1402,7 +1402,7 @@ void TF_I2C1_IS31_P3_Low_Level (void)
                 Led_Off();
                 Wait_ms(125);
             }
-            I2C1_Reset ();
+            // I2C1_Reset ();
         }
         else
             Led_On();
@@ -1428,7 +1428,7 @@ void TF_I2C1_IS31_P4_Low_Level (void)
     int error = 0;
     unsigned char addr = 0xBE;
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
     while (1)
     {
@@ -1588,7 +1588,7 @@ void TF_I2C1_IS31_P4_Low_Level (void)
                 Led_Off();
                 Wait_ms(125);
             }
-            I2C1_Reset ();
+            // I2C1_Reset ();
         }
         else
             Led_On();
@@ -1612,7 +1612,7 @@ void TF_I2C1_IS31_Low_Level_Int (void)
 
     unsigned char cmdbuf [194] = { 0 };
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     while (1)
@@ -1746,7 +1746,7 @@ void TF_I2C1_IS31_P3_High_Level (void)
     I2C1_Init();
     Wait_ms(100);
 
-    I2C1_Reset ();
+    // I2C1_Reset ();
 
 
     for (int i = 0; i < 3; i++)

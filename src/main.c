@@ -27,13 +27,23 @@
 
 
 // Private Types Constants and Macros ------------------------------------------
+typedef enum {
+    EQUIP_WAIT_CONN,
+    EQUIP_FULL_CONN,
+    EQUIP_FULL_CONN_ON_BATT
 
+} equip_status_e;
+
+
+#define CONF_RPI_CONNNECTED    0x01
+#define CONF_RUNNING_BATT    0x02
 
 // Externals -------------------------------------------------------------------
 //--- Externals from timers
 volatile unsigned short timer_standby = 0;
 volatile unsigned short wait_ms_var = 0;
-
+unsigned char config_byte0 = 0;
+unsigned char config_byte1 = 0;
 
 // Globals ---------------------------------------------------------------------
 
@@ -56,44 +66,10 @@ int main (void)
     if (SysTick_Config(64000))
         SysTickError();
 
-    // Hardware Tests
+    //-- Hardware Tests --------------------
     // TF_Hardware_Tests ();
+    //-- End of Hardware Tests -------------  
 
-    // --- main program inits. ---
-    // //-- DMA configuration.
-    // DMAConfig();
-    // DMA_ENABLE;
-    
-    // //-- ADC with DMA
-    // AdcConfig();
-    // // ADC_START;
-
-    // //-- DAC init for signal generation
-    // DAC_Config ();
-    // DAC_Output1(1400);
-    
-    // //-- Comms with rasp
-    // Usart1Config ();
-
-    // //-- Comms with probes
-    // // Usart3Config ();
-
-    // //-- TIM1 for signals module sequence ready
-    // TIM6_Init();
-    // TIM7_Init();
-    //-- Starts with all channels disabled
-    // Ena_Ch1_Off();
-    // Ena_Ch2_Off();
-    // Ena_Ch3_Off();
-    // Ena_Ch4_Off();
-
-    // //-- Comms with rasp & channels
-    // UsartRpiConfig ();
-    // UsartChannel1Config ();
-    // UsartChannel2Config ();
-
-    // char buff [120];
-    // char buff_tx [128];
     unsigned char freq_p1 = 0;
     unsigned char freq_p2 = 0;
     unsigned char freq_p3 = 0;
@@ -127,45 +103,82 @@ int main (void)
     IS31_Init (I2C_ADDR_P3);
     IS31_Init (I2C_ADDR_P4);        
     
-    //-- Main Loop --------------------------
-    DisplayUpdateFreq (ENCODER_FRQ_P1, freq_p1);
-    DisplayUpdateFreq (ENCODER_FRQ_P2, freq_p2);
-    DisplayUpdateFreq (ENCODER_FRQ_P3, freq_p3);
-    DisplayUpdateFreq (ENCODER_FRQ_P4, freq_p4);
+    // DisplayUpdateFreq (ENCODER_FRQ_P1, freq_p1);
+    // DisplayUpdateFreq (ENCODER_FRQ_P2, freq_p2);
+    // DisplayUpdateFreq (ENCODER_FRQ_P3, freq_p3);
+    // DisplayUpdateFreq (ENCODER_FRQ_P4, freq_p4);
 
-    DisplayUpdate (ENCODER_PWR_P1, power_p1);
-    DisplayUpdate (ENCODER_PWR_P2, power_p2);
-    DisplayUpdate (ENCODER_PWR_P3, power_p3);
-    DisplayUpdate (ENCODER_PWR_P4, power_p4);    
+    // DisplayUpdate (ENCODER_PWR_P1, power_p1);
+    // DisplayUpdate (ENCODER_PWR_P2, power_p2);
+    // DisplayUpdate (ENCODER_PWR_P3, power_p3);
+    // DisplayUpdate (ENCODER_PWR_P4, power_p4);    
     
     // Comms_Send_Encoder_Data (ENCODER_DISPLAY_1, encoder1);    
     // Comms_Send_Encoder_Data (ENCODER_DISPLAY_2, encoder2);
 
+    equip_status_e  equip_status = EQUIP_WAIT_CONN;
+    unsigned char pix_show = 0;
+
+    //-- Main Loop --------------------------    
     while (1)
     {
-        // first part
-        CheckEncoderFreq (ENCODER_FRQ_P1, &freq_p1);
-        CheckEncoderPwr (ENCODER_PWR_P1, &power_p1);
-
-        // second part
-        CheckEncoderFreq (ENCODER_FRQ_P2, &freq_p2);
-        CheckEncoderPwr (ENCODER_PWR_P2, &power_p2);
-
-        // third part
-        CheckEncoderFreq (ENCODER_FRQ_P3, &freq_p3);
-        CheckEncoderPwr (ENCODER_PWR_P3, &power_p3);
-
-        // fourth part
-        CheckEncoderFreq (ENCODER_FRQ_P4, &freq_p4);
-        CheckEncoderPwr (ENCODER_PWR_P4, &power_p4);
-        
-        Hard_Update_Encoders ();
-
-        // check encoders input from rpi
-        if (!timer_standby)
+        switch (equip_status)
         {
-            timer_standby = 200;
-            CheckEncodersInput ();
+        case EQUIP_WAIT_CONN:
+            if (!timer_standby)
+                break;
+            
+            timer_standby = 1000;
+            
+            for (int j = 0; j < 8; j++)
+                DisplaySinglePix (j, pix_show);
+
+            if (pix_show < 24 - 1)
+                pix_show++;
+            else
+                pix_show = 0;
+
+            if (config_byte0 & CONF_RPI_CONNNECTED)
+                equip_status = EQUIP_FULL_CONN;
+
+            break;
+
+        case EQUIP_FULL_CONN:
+            // first part
+            CheckEncoderFreq (ENCODER_FRQ_P1, &freq_p1);
+            CheckEncoderPwr (ENCODER_PWR_P1, &power_p1);
+
+            // second part
+            CheckEncoderFreq (ENCODER_FRQ_P2, &freq_p2);
+            CheckEncoderPwr (ENCODER_PWR_P2, &power_p2);
+
+            // third part
+            CheckEncoderFreq (ENCODER_FRQ_P3, &freq_p3);
+            CheckEncoderPwr (ENCODER_PWR_P3, &power_p3);
+
+            // fourth part
+            CheckEncoderFreq (ENCODER_FRQ_P4, &freq_p4);
+            CheckEncoderPwr (ENCODER_PWR_P4, &power_p4);
+        
+            Hard_Update_Encoders ();
+
+            // check encoders input from rpi
+            if (!timer_standby)
+            {
+                timer_standby = 200;
+                CheckEncodersInput ();
+            }
+
+            if (!(config_byte0 & CONF_RPI_CONNNECTED))
+                equip_status = EQUIP_WAIT_CONN;
+            
+            break;
+
+        case EQUIP_FULL_CONN_ON_BATT:
+            break;
+            
+        default:
+            break;
         }
     }
 }
@@ -178,7 +191,7 @@ void CheckEncoderFreq (unsigned char encoder_index, unsigned char * encoder_valu
 {
     int update = 0;
     
-    if (CheckCW (encoder_index))
+    if (CheckCCW (encoder_index))
     {
         if (*encoder_value)
             *encoder_value -= 1;
@@ -186,9 +199,9 @@ void CheckEncoderFreq (unsigned char encoder_index, unsigned char * encoder_valu
         update = 1;
     }
 
-    if (CheckCCW (encoder_index))
+    if (CheckCW (encoder_index))
     {
-        if (*encoder_value < 11)
+        if (*encoder_value < 10)
             *encoder_value += 1;
 
         update = 1;
@@ -206,7 +219,7 @@ void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value
 {
     int update = 0;
     
-    if (CheckCW (encoder_index))
+    if (CheckCCW (encoder_index))
     {
         if (*encoder_value)
             *encoder_value -= 1;
@@ -214,7 +227,7 @@ void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value
         update = 1;
     }
 
-    if (CheckCCW (encoder_index))
+    if (CheckCW (encoder_index))
     {
         if (*encoder_value < 5)
             *encoder_value += 1;
@@ -235,7 +248,7 @@ void CheckEncodersInput (void)
 {
     unsigned char buff [8];
 
-    if (I2C2_ReadMultiByte (buff, 0x44 | 0x01, 8) == 0)
+    if (I2C2_ReadMultiByte (buff, 0x44 | 0x01, 10) == 0)
     {
         for (int i = 0; i < 8; i++)
         {
@@ -252,6 +265,10 @@ void CheckEncodersInput (void)
                 }
             }
         }
+
+        // config bytes
+        config_byte0 = buff[8];
+        config_byte1 = buff[9];
     }
 }
 
