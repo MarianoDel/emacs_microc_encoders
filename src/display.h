@@ -33,6 +33,9 @@ void DisplayUpdatePwr (unsigned char encoder_display, unsigned char encoder_posi
 void CommsUpdate (unsigned char encoder_dispay, unsigned char encoder_position);
 void DisplaySinglePix (unsigned char encoder_display, unsigned char pix_index);
 
+void DisplayUpdateRgbFreq (unsigned char color_code);
+void DisplayUpdateRgbPwr (unsigned char color_code);
+
 #endif    /* _DISPLAY_H_ */
 
 //--- end of file ---//

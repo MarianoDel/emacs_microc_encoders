@@ -146,8 +146,17 @@ int main (void)
             // check configs
             if (!timer_encoders)
             {
+                unsigned char fcolor_code = 0;
+                unsigned char pcolor_code = 0;                
+
                 timer_encoders = 200;
                 CheckEncodersInput ();
+
+                fcolor_code = (config_byte0 >> 2) & 0x07;
+                pcolor_code = (config_byte0 >> 5) & 0x07;
+                
+                DisplayUpdateRgbFreq(fcolor_code);
+                DisplayUpdateRgbPwr(pcolor_code);
             }            
             break;
 
@@ -173,8 +182,17 @@ int main (void)
             // check encoders input from rpi
             if (!timer_encoders)
             {
+                unsigned char fcolor_code = 0;
+                unsigned char pcolor_code = 0;                
+
                 timer_encoders = 200;
                 CheckEncodersInput ();
+
+                fcolor_code = (config_byte0 >> 2) & 0x07;
+                pcolor_code = (config_byte0 >> 5) & 0x07;
+                
+                DisplayUpdateRgbFreq(fcolor_code);
+                DisplayUpdateRgbPwr(pcolor_code);
             }
 
             if (!(config_byte0 & CONF_RPI_CONNNECTED))
