@@ -46,7 +46,9 @@ volatile unsigned short wait_ms_var = 0;
 unsigned char config_byte0 = 0;
 unsigned char config_byte1 = 0;
 
+
 // Globals ---------------------------------------------------------------------
+unsigned char enc_buff [8] = { 0 };
 
 
 // Module Private Functions ----------------------------------------------------
@@ -55,6 +57,7 @@ void SysTickError (void);
 void CheckEncoderFreq (unsigned char encoder_index, unsigned char * encoder_value);
 void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value);
 void CheckEncodersInput (void);
+enc_delta_e CheckEncodersDeltas (unsigned char encoder_index);
 
 
 // Module Functions ------------------------------------------------------------
@@ -161,6 +164,17 @@ int main (void)
             break;
 
         case EQUIP_FULL_CONN:
+#ifdef ENCODERS_SEND_DELTAS
+            for (int i = 0; i < 8; i++)
+            {
+                // give time for propagation
+                if (CheckEncodersDeltas (i) != ENCOD_NO_UPDATE)
+                {
+                    timer_encoders = 100;
+                    break;
+                }
+            }
+#else
             // first part
             CheckEncoderFreq (ENCODER_FRQ_P1, &freq_p1);
             CheckEncoderPwr (ENCODER_PWR_P1, &power_p1);
@@ -176,7 +190,7 @@ int main (void)
             // fourth part
             CheckEncoderFreq (ENCODER_FRQ_P4, &freq_p4);
             CheckEncoderPwr (ENCODER_PWR_P4, &power_p4);
-        
+#endif
             Hard_Update_Encoders ();
 
             // check encoders input from rpi
@@ -238,6 +252,7 @@ void CheckEncoderFreq (unsigned char encoder_index, unsigned char * encoder_valu
         DisplayUpdateFreq (encoder_index, *encoder_value);
         Comms_Send_Encoder_Data (encoder_index, *encoder_value);
     }
+
 }
 
 
@@ -265,11 +280,30 @@ void CheckEncoderPwr (unsigned char encoder_index, unsigned char * encoder_value
     {
         DisplayUpdate (encoder_index, *encoder_value);
         Comms_Send_Encoder_Data (encoder_index, *encoder_value);
-    }    
+    }
+
 }
 
 
-unsigned char enc_buff [8];
+enc_delta_e CheckEncodersDeltas (unsigned char encoder_index)
+{
+    enc_delta_e encoder_delta = ENCOD_NO_UPDATE;
+    
+    if (CheckCCW (encoder_index))
+        encoder_delta = ENCOD_UPDATE_DWN;
+    
+    if (CheckCW (encoder_index))
+        encoder_delta = ENCOD_UPDATE_UP;
+
+    if (encoder_delta != ENCOD_NO_UPDATE)
+    {
+        Comms_Send_Encoder_Data_Deltas (encoder_index, encoder_delta);
+    }
+
+    return encoder_delta;
+}
+
+
 void CheckEncodersInput (void)
 {
     unsigned char buff [10];

@@ -65,101 +65,21 @@ void Comms_Send_Encoder_Data (unsigned char encoder_number, unsigned char positi
 }
 
 
-// void Comms_Update (void)
-// {
-//     if (UsartRpiHaveData())
-//     {
-//         UsartRpiHaveDataReset();
-//         UsartRpiReadBuffer(local_buff, SIZEOF_LOCAL_BUFF);
-//         Comms_Messages(local_buff);
+void Comms_Send_Encoder_Data_Deltas (unsigned char encoder_number, enc_delta_e delta)
+{
+    char buff [100];
 
-//         comms_timeout = COMMS_TT_RELOAD;
-//     }
-// }
-
-
-// static void Comms_Messages (char * msg_str)
-// {
-//     // resp_e resp;
-//     char buff [128];    
-    
-//     // check if its own, broadcast or channel
-//     // for channel 1
-//     if (strncmp (msg_str, "ch1", sizeof("ch1") - 1) == 0)
-//     {
-//         // check enable or bridged
-//         if (strncmp ((msg_str + 4), "enable", sizeof("enable") - 1) == 0)
-//         {
-//             Ena_Ch1_On();
-//             UsartRpiSend(s_ans_ok);
-//         }
-//         else if (strncmp ((msg_str + 4), "disable", sizeof("disable") - 1) == 0)
-//         {
-//             Ena_Ch1_Off();
-//             UsartRpiSend(s_ans_ok);
-//         }
-//         else    // bridge the message
-//         {
-//             sprintf(buff, "%s\n", (msg_str + 4));
-//             UsartChannel1Send (buff);
-//         }
-//     }
-//     else if (strncmp (msg_str, "ch2", sizeof("ch2") - 1) == 0)
-//     {
-//         // check enable or bridged
-//         if (strncmp ((msg_str + 4), "enable", sizeof("enable") - 1) == 0)
-//         {
-//             Ena_Ch2_On();
-//             UsartRpiSend(s_ans_ok);
-//         }
-//         else if (strncmp ((msg_str + 4), "disable", sizeof("disable") - 1) == 0)
-//         {
-//             Ena_Ch2_Off();
-//             UsartRpiSend(s_ans_ok);
-//         }
-//         else    // bridge the message
-//         {
-//             sprintf(buff, "%s\n", (msg_str + 4));
-//             UsartChannel2Send (buff);
-//         }
-//     }
-//     else if (strncmp (msg_str, "chf", sizeof("chf") - 1) == 0)
-//     {
-//         // check enable or bridged
-//         if (strncmp ((msg_str + 4), "enable", sizeof("enable") - 1) == 0)
-//         {
-//             Ena_Ch1_On();
-//             Ena_Ch2_On();
-//             Ena_Ch3_On();
-//             Ena_Ch4_On();            
-//             UsartRpiSend(s_ans_ok);
-//         }
-//         else if (strncmp ((msg_str + 4), "disable", sizeof("disable") - 1) == 0)
-//         {
-//             Ena_Ch1_Off();
-//             Ena_Ch2_Off();
-//             Ena_Ch3_Off();
-//             Ena_Ch4_Off();            
-//             UsartRpiSend(s_ans_ok);
-//         }
-//         else    // bridge the message
-//         {
-//             sprintf(buff, "%s\n", (msg_str + 4));
-//             UsartChannel1Send (buff);
-//             UsartChannel2Send (buff);
-//             // UsartChannel3Send (buff);
-//             // UsartChannel4Send (buff);            
-//         }
-//     }
-//     else if (strncmp (msg_str, "sup", sizeof("sup") - 1) == 0)
-//     {
-//         // not implemented yet!
-//         UsartRpiSend(s_ans_ok);
-//     }
-//     else
-//         UsartRpiSend(s_ans_nok);
-
-// }
+    if (delta == ENCOD_UPDATE_UP)
+    {
+        sprintf(buff, "enc + %d", encoder_number);
+        I2C2_SendMultiByte((unsigned char *) buff, 0x44, strlen(buff));
+    }
+    else if (delta == ENCOD_UPDATE_DWN)
+    {
+        sprintf(buff, "enc - %d", encoder_number);
+        I2C2_SendMultiByte((unsigned char *) buff, 0x44, strlen(buff));
+    }
+}
 
 
 //---- End of File ----//

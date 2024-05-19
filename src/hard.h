@@ -13,6 +13,7 @@
 
 
 //----------- Defines For Configuration -------------
+#define ENCODERS_SEND_DELTAS    // send the movement instead of position
 
 //----- Board Configuration -------------------//
 //--- Hardware ------------------//
@@ -199,6 +200,14 @@ typedef enum {
     SW_FULL
     
 } resp_sw_t;
+
+
+typedef enum {
+    ENCOD_NO_UPDATE,
+    ENCOD_UPDATE_UP,
+    ENCOD_UPDATE_DWN
+
+} enc_delta_e;
 
 
 // Module Exported Functions ---------------------------------------------------

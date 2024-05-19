@@ -12,7 +12,7 @@
 #define _COMMS_H_
 
 //---- Includes to help the Defines ----------
-
+#include "hard.h"
 
 
 //---- Configurations Defines --------------------
@@ -28,5 +28,6 @@ void Comms_Update (void);
 // static void Comms_Messages (char * msg_str);
 unsigned char Comms_Rpi_Answering (void);
 void Comms_Send_Encoder_Data (unsigned char encoder_number, unsigned char position);
+void Comms_Send_Encoder_Data_Deltas (unsigned char encoder_number, enc_delta_e delta);
 
 #endif    /* _COMMS_H_ */
